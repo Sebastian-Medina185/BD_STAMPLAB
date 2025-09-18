@@ -8,10 +8,11 @@ const config = {
     database: process.env.DB_NAME || 'tu_base_de_datos',
     port: parseInt(process.env.DB_PORT) || 1433,
     options: {
-        encrypt: false,
-        trustServerCertificate: true,
-        enableArithAbort: true
-    },
+  encrypt: false,
+  trustServerCertificate: true,
+  enableArithAbort: true,
+},
+
     connectionTimeout: 30000,
     requestTimeout: 30000
 };

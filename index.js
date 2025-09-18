@@ -2,10 +2,13 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors');
 require('dotenv').config();
+
 
 const app = express();
 
+app.use(cors());
 // capturar el body
 app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
