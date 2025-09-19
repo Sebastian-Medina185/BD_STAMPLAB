@@ -17,18 +17,18 @@ const config = {
     requestTimeout: 30000
 };
 
-console.log('🔌 Intentando conectar a la base de datos...');
-console.log('📊 Servidor:', config.server);
-console.log('🗄️  Base de datos:', config.database);
+console.log('Intentando conectar a la base de datos...');
+console.log('Servidor:', config.server);
+console.log('Base de datos:', config.database);
 
 const poolPromise = new sql.ConnectionPool(config)
     .connect()
     .then(pool => {
-        console.log('✅ Conectado a SQL Server exitosamente');
+        console.log('Conectado a SQL Server exitosamente');
         return pool;
     })
     .catch(err => {
-        console.error('❌ Error conectando a la base de datos:', err.message);
+        console.error('Error conectando a la base de datos:', err.message);
         return null;
     });
 

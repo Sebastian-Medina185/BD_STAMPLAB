@@ -11,7 +11,7 @@ async function getUsuarios() {
                u.RolID, r.Nombre as RolNombre, r.Descripcion as RolDescripcion
         FROM dbo.Usuarios u
         INNER JOIN dbo.Roles r ON u.RolID = r.RolID
-        ORDER BY u.Nombre
+        ORDER BY u.DocumentoID
     `);
     return result.recordset;
 }

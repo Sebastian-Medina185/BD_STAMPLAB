@@ -116,34 +116,31 @@ async function deleteRol(rolID) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Verificar que el rol existe
+    // Usa un tipo correcto, aquí asumo texto hasta 50 chars
     const rolExists = await pool.request()
-        .input("rolID", sql.VarChar(2), rolID)
+        .input("rolID", sql.VarChar(50), rolID)
         .query("SELECT * FROM dbo.Roles WHERE RolID = @rolID");
-    
+
     if (rolExists.recordset.length === 0) {
         throw new Error('El rol no existe');
     }
 
     // Verificar si tiene usuarios asociados
     const hasUsuarios = await pool.request()
-        .input("rolID", sql.VarChar(2), rolID)
+        .input("rolID", sql.VarChar(50), rolID)
         .query("SELECT COUNT(*) as count FROM dbo.Usuarios WHERE RolID = @rolID");
-    
+
     if (hasUsuarios.recordset[0].count > 0) {
         throw new Error('No se puede eliminar el rol porque tiene usuarios asociados');
     }
 
-    const result = await pool.request()
-        .input("rolID", sql.VarChar(2), rolID)
+    await pool.request()
+        .input("rolID", sql.VarChar(50), rolID)
         .query("DELETE FROM dbo.Roles WHERE RolID = @rolID");
-    
-    return { 
-        deleted: true, 
-        rol: rolExists.recordset[0],
-        rowsAffected: result.rowsAffected[0] 
-    };
+
+    return { deleted: true, rol: rolExists.recordset[0] };
 }
+
 
 // =================== CAMBIAR ESTADO ===================
 async function cambiarEstadoRol(rolID, estado) {
