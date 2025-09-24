@@ -19,7 +19,7 @@ async function getTelaById(telaID) {
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
     
     const result = await pool.request()
-        .input("telaID", sql.VarChar(2), telaID)
+        .input("telaID", sql.Int, telaID) // CAMBIO: VarChar(2) → Int
         .query("SELECT TelaID, Nombre FROM dbo.Telas WHERE TelaID = @telaID");
     
     return result.recordset[0];
@@ -30,22 +30,14 @@ async function createTela(tela) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Verificar que el TelaID no existe
-    const telaExists = await pool.request()
-        .input("telaID", sql.VarChar(2), tela.TelaID)
-        .query("SELECT COUNT(*) as count FROM dbo.Telas WHERE TelaID = @telaID");
-    
-    if (telaExists.recordset[0].count > 0) {
-        throw new Error('Ya existe una tela con este ID');
-    }
+    // ELIMINAR: Ya no verificamos IDs duplicados ni recibimos TelaID
 
     const result = await pool.request()
-        .input("telaID", sql.VarChar(2), tela.TelaID)
         .input("nombre", sql.VarChar(40), tela.Nombre)
         .query(`
-            INSERT INTO dbo.Telas (TelaID, Nombre)
-            VALUES (@telaID, @nombre);
-            SELECT * FROM dbo.Telas WHERE TelaID = @telaID;
+            INSERT INTO dbo.Telas (Nombre)
+            VALUES (@nombre);
+            SELECT * FROM dbo.Telas WHERE TelaID = SCOPE_IDENTITY();
         `);
     
     return result.recordset[0];
@@ -58,7 +50,7 @@ async function updateTela(telaID, tela) {
 
     // Verificar que la tela existe
     const telaExists = await pool.request()
-        .input("telaID", sql.VarChar(2), telaID)
+        .input("telaID", sql.Int, telaID) // CAMBIO: VarChar(2) → Int
         .query("SELECT COUNT(*) as count FROM dbo.Telas WHERE TelaID = @telaID");
     
     if (telaExists.recordset[0].count === 0) {
@@ -66,7 +58,7 @@ async function updateTela(telaID, tela) {
     }
 
     const result = await pool.request()
-        .input("telaID", sql.VarChar(2), telaID)
+        .input("telaID", sql.Int, telaID) // CAMBIO: VarChar(2) → Int
         .input("nombre", sql.VarChar(40), tela.Nombre)
         .query(`
             UPDATE dbo.Telas 
@@ -85,7 +77,7 @@ async function deleteTela(telaID) {
 
     // Verificar que la tela existe
     const telaExists = await pool.request()
-        .input("telaID", sql.VarChar(2), telaID)
+        .input("telaID", sql.Int, telaID) // CAMBIO: VarChar(2) → Int
         .query("SELECT * FROM dbo.Telas WHERE TelaID = @telaID");
     
     if (telaExists.recordset.length === 0) {
@@ -94,7 +86,7 @@ async function deleteTela(telaID) {
 
     // Verificar si tiene productos asociados
     const hasProductos = await pool.request()
-        .input("telaID", sql.VarChar(2), telaID)
+        .input("telaID", sql.Int, telaID) // CAMBIO: VarChar(2) → Int
         .query("SELECT COUNT(*) as count FROM dbo.Productos WHERE TelaID = @telaID");
     
     if (hasProductos.recordset[0].count > 0) {
@@ -102,7 +94,7 @@ async function deleteTela(telaID) {
     }
 
     const result = await pool.request()
-        .input("telaID", sql.VarChar(2), telaID)
+        .input("telaID", sql.Int, telaID) // CAMBIO: VarChar(2) → Int
         .query("DELETE FROM dbo.Telas WHERE TelaID = @telaID");
     
     return { 

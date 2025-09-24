@@ -1,3 +1,6 @@
+// ===============================================
+// MODELO DE INSUMOS ACTUALIZADO (AUTOINCREMENTAL)
+// ===============================================
 // src/models/insumos.js
 const { sql, poolPromise } = require("../../db");
 
@@ -32,7 +35,7 @@ async function getInsumoById(insumoID) {
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
     
     const result = await pool.request()
-        .input("insumoID", sql.VarChar(3), insumoID)
+        .input("insumoID", sql.Int, insumoID)
         .query("SELECT InsumoID, Nombre, Stock, Estado FROM dbo.Insumos WHERE InsumoID = @insumoID");
     
     return result.recordset[0];
@@ -43,24 +46,14 @@ async function createInsumo(insumo) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Verificar que el InsumoID no existe
-    const insumoExists = await pool.request()
-        .input("insumoID", sql.VarChar(3), insumo.InsumoID)
-        .query("SELECT COUNT(*) as count FROM dbo.Insumos WHERE InsumoID = @insumoID");
-    
-    if (insumoExists.recordset[0].count > 0) {
-        throw new Error('Ya existe un insumo con este ID');
-    }
-
     const result = await pool.request()
-        .input("insumoID", sql.VarChar(3), insumo.InsumoID)
         .input("nombre", sql.VarChar(50), insumo.Nombre)
         .input("stock", sql.Int, insumo.Stock || 0)
         .input("estado", sql.Bit, insumo.Estado !== undefined ? insumo.Estado : true)
         .query(`
-            INSERT INTO dbo.Insumos (InsumoID, Nombre, Stock, Estado)
-            VALUES (@insumoID, @nombre, @stock, @estado);
-            SELECT * FROM dbo.Insumos WHERE InsumoID = @insumoID;
+            INSERT INTO dbo.Insumos (Nombre, Stock, Estado)
+            VALUES (@nombre, @stock, @estado);
+            SELECT * FROM dbo.Insumos WHERE InsumoID = SCOPE_IDENTITY();
         `);
     
     return result.recordset[0];
@@ -73,7 +66,7 @@ async function updateInsumo(insumoID, insumo) {
 
     // Verificar que el insumo existe
     const insumoExists = await pool.request()
-        .input("insumoID", sql.VarChar(3), insumoID)
+        .input("insumoID", sql.Int, insumoID)
         .query("SELECT COUNT(*) as count FROM dbo.Insumos WHERE InsumoID = @insumoID");
     
     if (insumoExists.recordset[0].count === 0) {
@@ -82,7 +75,7 @@ async function updateInsumo(insumoID, insumo) {
 
     // Construir la consulta de actualización dinámicamente
     let updateFields = [];
-    let request = pool.request().input("insumoID", sql.VarChar(3), insumoID);
+    let request = pool.request().input("insumoID", sql.Int, insumoID);
 
     if (insumo.Nombre) {
         updateFields.push("Nombre = @nombre");
@@ -118,7 +111,7 @@ async function deleteInsumo(insumoID) {
 
     // Verificar que el insumo existe
     const insumoExists = await pool.request()
-        .input("insumoID", sql.VarChar(3), insumoID)
+        .input("insumoID", sql.Int, insumoID)
         .query("SELECT * FROM dbo.Insumos WHERE InsumoID = @insumoID");
     
     if (insumoExists.recordset.length === 0) {
@@ -127,7 +120,7 @@ async function deleteInsumo(insumoID) {
 
     // Verificar si tiene pedidos asociados
     const hasPedidos = await pool.request()
-        .input("insumoID", sql.VarChar(3), insumoID)
+        .input("insumoID", sql.Int, insumoID)
         .query("SELECT COUNT(*) as count FROM dbo.DetallePedido WHERE InsumoID = @insumoID");
     
     if (hasPedidos.recordset[0].count > 0) {
@@ -135,7 +128,7 @@ async function deleteInsumo(insumoID) {
     }
 
     const result = await pool.request()
-        .input("insumoID", sql.VarChar(3), insumoID)
+        .input("insumoID", sql.Int, insumoID)
         .query("DELETE FROM dbo.Insumos WHERE InsumoID = @insumoID");
     
     return { 
@@ -152,7 +145,7 @@ async function actualizarStock(insumoID, cantidadCambio, tipo = 'incremento') {
 
     // Obtener stock actual
     const insumoActual = await pool.request()
-        .input("insumoID", sql.VarChar(3), insumoID)
+        .input("insumoID", sql.Int, insumoID)
         .query("SELECT Stock FROM dbo.Insumos WHERE InsumoID = @insumoID");
     
     if (insumoActual.recordset.length === 0) {
@@ -174,7 +167,7 @@ async function actualizarStock(insumoID, cantidadCambio, tipo = 'incremento') {
     }
 
     const result = await pool.request()
-        .input("insumoID", sql.VarChar(3), insumoID)
+        .input("insumoID", sql.Int, insumoID)
         .input("nuevoStock", sql.Int, nuevoStock)
         .query(`
             UPDATE dbo.Insumos 
