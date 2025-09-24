@@ -26,7 +26,15 @@ router.get("/", async (req, res) => {
 
 router.get("/:telaID", async (req, res) => {
     try {
-        const telaID = req.params.telaID;
+        const telaID = parseInt(req.params.telaID);
+        
+        if (isNaN(telaID)) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "El ID de la tela debe ser un número válido"
+            });
+        }
+
         const tela = await getTelaById(telaID);
 
         if (!tela) {
@@ -55,24 +63,24 @@ router.get("/:telaID", async (req, res) => {
 // =================== CREAR ===================
 router.post("/", async (req, res) => {
     try {
-        const { TelaID, Nombre } = req.body;
+        const { Nombre } = req.body;
 
-        if (!TelaID || !Nombre) {
+        if (!Nombre) {
             return res.status(400).json({
                 estado: false,
-                mensaje: "TelaID y Nombre son requeridos",
-                camposRequeridos: ["TelaID", "Nombre"]
+                mensaje: "Nombre es requerido",
+                camposRequeridos: ["Nombre"]
             });
         }
 
-        if (TelaID.length > 2 || Nombre.length > 40) {
+        if (Nombre.length > 40) {
             return res.status(400).json({
                 estado: false,
-                mensaje: "TelaID máximo 2 caracteres, Nombre máximo 40 caracteres"
+                mensaje: "Nombre máximo 40 caracteres"
             });
         }
 
-        const nuevaTela = await createTela({ TelaID, Nombre });
+        const nuevaTela = await createTela({ Nombre });
 
         res.status(201).json({
             estado: true,
@@ -83,13 +91,6 @@ router.post("/", async (req, res) => {
 
     } catch (err) {
         console.error("❌ Error en POST /telas:", err.message);
-        if (err.message.includes('Ya existe')) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: err.message,
-                tipo: "error_validacion"
-            });
-        }
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear la tela",
@@ -101,13 +102,27 @@ router.post("/", async (req, res) => {
 // =================== EDITAR ===================
 router.put("/:telaID", async (req, res) => {
     try {
-        const telaID = req.params.telaID;
+        const telaID = parseInt(req.params.telaID);
         const { Nombre } = req.body;
+
+        if (isNaN(telaID)) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "El ID de la tela debe ser un número válido"
+            });
+        }
 
         if (!Nombre) {
             return res.status(400).json({
                 estado: false,
                 mensaje: "Nombre es requerido"
+            });
+        }
+
+        if (Nombre.length > 40) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "Nombre máximo 40 caracteres"
             });
         }
 
@@ -139,7 +154,15 @@ router.put("/:telaID", async (req, res) => {
 // =================== ELIMINAR ===================
 router.delete("/:telaID", async (req, res) => {
     try {
-        const telaID = req.params.telaID;
+        const telaID = parseInt(req.params.telaID);
+
+        if (isNaN(telaID)) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "El ID de la tela debe ser un número válido"
+            });
+        }
+
         const resultado = await deleteTela(telaID);
 
         res.json({

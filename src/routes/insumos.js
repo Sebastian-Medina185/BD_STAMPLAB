@@ -54,7 +54,15 @@ router.get("/activos", async (req, res) => {
 
 router.get("/:insumoID", async (req, res) => {
     try {
-        const insumoID = req.params.insumoID;
+        const insumoID = parseInt(req.params.insumoID);
+        
+        if (isNaN(insumoID)) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "El ID del insumo debe ser un número válido"
+            });
+        }
+
         const insumo = await getInsumoById(insumoID);
 
         if (!insumo) {
@@ -83,20 +91,20 @@ router.get("/:insumoID", async (req, res) => {
 // =================== CREAR ===================
 router.post("/", async (req, res) => {
     try {
-        const { InsumoID, Nombre, Stock, Estado } = req.body;
+        const { Nombre, Stock, Estado } = req.body;
 
-        if (!InsumoID || !Nombre) {
+        if (!Nombre) {
             return res.status(400).json({
                 estado: false,
-                mensaje: "InsumoID y Nombre son requeridos",
-                camposRequeridos: ["InsumoID", "Nombre"]
+                mensaje: "Nombre es requerido",
+                camposRequeridos: ["Nombre"]
             });
         }
 
-        if (InsumoID.length > 3 || Nombre.length > 50) {
+        if (Nombre.length > 50) {
             return res.status(400).json({
                 estado: false,
-                mensaje: "InsumoID máximo 3 caracteres, Nombre máximo 50 caracteres"
+                mensaje: "Nombre máximo 50 caracteres"
             });
         }
 
@@ -108,7 +116,6 @@ router.post("/", async (req, res) => {
         }
 
         const nuevoInsumo = await createInsumo({ 
-            InsumoID, 
             Nombre, 
             Stock: Stock || 0, 
             Estado: Estado !== undefined ? Estado : true 
@@ -123,13 +130,6 @@ router.post("/", async (req, res) => {
 
     } catch (err) {
         console.error("❌ Error en POST /insumos:", err.message);
-        if (err.message.includes('Ya existe')) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: err.message,
-                tipo: "error_validacion"
-            });
-        }
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear el insumo",
@@ -141,13 +141,27 @@ router.post("/", async (req, res) => {
 // =================== EDITAR ===================
 router.put("/:insumoID", async (req, res) => {
     try {
-        const insumoID = req.params.insumoID;
+        const insumoID = parseInt(req.params.insumoID);
         const datosActualizacion = req.body;
+
+        if (isNaN(insumoID)) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "El ID del insumo debe ser un número válido"
+            });
+        }
 
         if (Object.keys(datosActualizacion).length === 0) {
             return res.status(400).json({
                 estado: false,
                 mensaje: "Debe enviar al menos un campo para actualizar"
+            });
+        }
+
+        if (datosActualizacion.Nombre && datosActualizacion.Nombre.length > 50) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "Nombre máximo 50 caracteres"
             });
         }
 
@@ -186,8 +200,15 @@ router.put("/:insumoID", async (req, res) => {
 // =================== GESTIÓN DE STOCK ===================
 router.patch("/:insumoID/stock", async (req, res) => {
     try {
-        const insumoID = req.params.insumoID;
+        const insumoID = parseInt(req.params.insumoID);
         const { cantidad, tipo } = req.body;
+
+        if (isNaN(insumoID)) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "El ID del insumo debe ser un número válido"
+            });
+        }
 
         if (!cantidad || !tipo) {
             return res.status(400).json({
@@ -241,7 +262,15 @@ router.patch("/:insumoID/stock", async (req, res) => {
 // =================== ELIMINAR ===================
 router.delete("/:insumoID", async (req, res) => {
     try {
-        const insumoID = req.params.insumoID;
+        const insumoID = parseInt(req.params.insumoID);
+
+        if (isNaN(insumoID)) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "El ID del insumo debe ser un número válido"
+            });
+        }
+
         const resultado = await deleteInsumo(insumoID);
 
         res.json({
