@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
 
 router.get("/:parteID", async (req, res) => {
     try {
-        const parteID = req.params.parteID;
+        const parteID = parseInt(req.params.parteID);
         const parte = await getParteById(parteID);
 
         if (!parte) {
@@ -55,20 +55,20 @@ router.get("/:parteID", async (req, res) => {
 // =================== CREAR ===================
 router.post("/", async (req, res) => {
     try {
-        const { ParteID, Nombre, Observaciones } = req.body;
+        const { Nombre, Observaciones } = req.body;
 
-        if (!ParteID || !Nombre) {
+        if (!Nombre) {
             return res.status(400).json({
                 estado: false,
-                mensaje: "ParteID y Nombre son requeridos",
-                camposRequeridos: ["ParteID", "Nombre"]
+                mensaje: "Nombre es requerido",
+                camposRequeridos: ["Nombre"]
             });
         }
 
-        if (ParteID.length > 2 || Nombre.length > 20) {
+        if (Nombre.length > 20) {
             return res.status(400).json({
                 estado: false,
-                mensaje: "ParteID máximo 2 caracteres, Nombre máximo 20 caracteres"
+                mensaje: "Nombre máximo 20 caracteres"
             });
         }
 
@@ -79,11 +79,7 @@ router.post("/", async (req, res) => {
             });
         }
 
-        const nuevaParte = await createParte({ 
-            ParteID, 
-            Nombre, 
-            Observaciones 
-        });
+        const nuevaParte = await createParte({ Nombre, Observaciones });
 
         res.status(201).json({
             estado: true,
@@ -91,16 +87,8 @@ router.post("/", async (req, res) => {
             datos: nuevaParte,
             timestamp: new Date().toISOString()
         });
-
     } catch (err) {
         console.error("❌ Error en POST /partes:", err.message);
-        if (err.message.includes('Ya existe')) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: err.message,
-                tipo: "error_validacion"
-            });
-        }
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear la parte",
@@ -112,31 +100,17 @@ router.post("/", async (req, res) => {
 // =================== EDITAR ===================
 router.put("/:parteID", async (req, res) => {
     try {
-        const parteID = req.params.parteID;
-        const datosActualizacion = req.body;
+        const parteID = parseInt(req.params.parteID);
+        const { Nombre, Observaciones } = req.body;
 
-        if (Object.keys(datosActualizacion).length === 0) {
+        if (!Nombre) {
             return res.status(400).json({
                 estado: false,
-                mensaje: "Debe enviar al menos un campo para actualizar"
+                mensaje: "Nombre es requerido"
             });
         }
 
-        if (datosActualizacion.Nombre && datosActualizacion.Nombre.length > 20) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: "Nombre máximo 20 caracteres"
-            });
-        }
-
-        if (datosActualizacion.Observaciones && datosActualizacion.Observaciones.length > 80) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: "Observaciones máximo 80 caracteres"
-            });
-        }
-
-        const parteActualizada = await updateParte(parteID, datosActualizacion);
+        const parteActualizada = await updateParte(parteID, { Nombre, Observaciones });
 
         res.json({
             estado: true,
@@ -144,7 +118,6 @@ router.put("/:parteID", async (req, res) => {
             datos: parteActualizada,
             timestamp: new Date().toISOString()
         });
-
     } catch (err) {
         console.error(`❌ Error en PUT /partes/${req.params.parteID}:`, err.message);
         if (err.message.includes('no existe')) {
@@ -164,7 +137,7 @@ router.put("/:parteID", async (req, res) => {
 // =================== ELIMINAR ===================
 router.delete("/:parteID", async (req, res) => {
     try {
-        const parteID = req.params.parteID;
+        const parteID = parseInt(req.params.parteID);
         const resultado = await deleteParte(parteID);
 
         res.json({
@@ -174,7 +147,6 @@ router.delete("/:parteID", async (req, res) => {
             filasAfectadas: resultado.rowsAffected,
             timestamp: new Date().toISOString()
         });
-
     } catch (err) {
         console.error(`❌ Error en DELETE /partes/${req.params.parteID}:`, err.message);
         if (err.message.includes('no existe') || err.message.includes('diseños asociados')) {

@@ -65,7 +65,7 @@ router.post("/", async (req, res) => {
             return res.status(400).json({
                 estado: false,
                 mensaje: "Nombre es requerido",
-                camposRequeridos: ["Nombre"] // ⚠ CAMBIAR: solo Nombre
+                camposRequeridos: ["Nombre"] // ⚠ CAMBIAR: solo Nombre y quitar el ID
             });
         }
 

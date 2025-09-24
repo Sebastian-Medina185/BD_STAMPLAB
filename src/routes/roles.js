@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("Error en GET /roles:", err.message);
+        console.error("❌ Error en GET /roles:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de roles",
@@ -43,7 +43,7 @@ router.get("/activos", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("Error en GET /roles/activos:", err.message);
+        console.error("❌ Error en GET /roles/activos:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de roles activos",
@@ -54,7 +54,7 @@ router.get("/activos", async (req, res) => {
 
 router.get("/:rolID", async (req, res) => {
     try {
-        const rolID = req.params.rolID;
+        const rolID = parseInt(req.params.rolID);
         const rol = await getRolById(rolID);
 
         if (!rol) {
@@ -71,7 +71,7 @@ router.get("/:rolID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`Error en GET /roles/${req.params.rolID}:`, err.message);
+        console.error(`❌ Error en GET /roles/${req.params.rolID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta del rol",
@@ -82,27 +82,36 @@ router.get("/:rolID", async (req, res) => {
 
 // =================== CREAR ===================
 router.post("/", async (req, res) => {
-    console.log("✅ Se llamó POST /roles");
-    console.log("Datos recibidos:", req.body);
-
     try {
-        const { RolID, Nombre, Descripcion, Estado } = req.body;
+        const { Nombre, Descripcion, Estado } = req.body;
 
-        if (!RolID || !Nombre) {
-            return res.status(400).json({ estado: false, mensaje: "RolID y Nombre requeridos" });
+        if (!Nombre) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "Nombre es requerido",
+                camposRequeridos: ["Nombre"]
+            });
         }
 
         const nuevoRol = await createRol({
-            RolID,
             Nombre,
             Descripcion,
-            Estado: Estado !== undefined ? Estado : true,
+            Estado: Estado !== undefined ? Estado : true
         });
 
-        res.status(201).json({ estado: true, mensaje: "Rol creado", datos: nuevoRol });
+        res.status(201).json({
+            estado: true,
+            mensaje: "Rol creado exitosamente",
+            datos: nuevoRol,
+            timestamp: new Date().toISOString()
+        });
     } catch (err) {
-        console.error("Error al crear rol:", err.message);
-        res.status(500).json({ estado: false, mensaje: "Error al crear rol", error: err.message });
+        console.error("❌ Error en POST /roles:", err.message);
+        res.status(500).json({
+            estado: false,
+            mensaje: "Error al crear el rol",
+            error: err.message
+        });
     }
 });
 
@@ -111,10 +120,10 @@ router.post("/", async (req, res) => {
 // =================== EDITAR ===================
 router.put("/:rolID", async (req, res) => {
     try {
-        const rolID = req.params.rolID;
-        const datosActualizacion = req.body;
+        const rolID = parseInt(req.params.rolID);
+        const { Nombre, Descripcion, Estado } = req.body;
 
-        const rolActualizado = await updateRol(rolID, datosActualizacion);
+        const rolActualizado = await updateRol(rolID, { Nombre, Descripcion, Estado });
 
         res.json({
             estado: true,
@@ -122,9 +131,14 @@ router.put("/:rolID", async (req, res) => {
             datos: rolActualizado,
             timestamp: new Date().toISOString()
         });
-
     } catch (err) {
-        console.error(`Error en PUT /roles/${req.params.rolID}:`, err.message);
+        console.error(`❌ Error en PUT /roles/${req.params.rolID}:`, err.message);
+        if (err.message.includes('no existe')) {
+            return res.status(404).json({
+                estado: false,
+                mensaje: err.message
+            });
+        }
         res.status(500).json({
             estado: false,
             mensaje: "Error al actualizar el rol",
@@ -136,7 +150,7 @@ router.put("/:rolID", async (req, res) => {
 // =================== CAMBIAR ESTADO ===================
 router.patch("/:rolID/estado", async (req, res) => {
     try {
-        const rolID = req.params.rolID;
+        const rolID = parseInt(req.params.rolID);
         const { Estado } = req.body;
 
         const rolActualizado = await cambiarEstadoRol(rolID, Estado);
@@ -147,9 +161,8 @@ router.patch("/:rolID/estado", async (req, res) => {
             datos: rolActualizado,
             timestamp: new Date().toISOString()
         });
-
     } catch (err) {
-        console.error(`Error en PATCH /roles/${req.params.rolID}/estado:`, err.message);
+        console.error(`❌ Error en PATCH /roles/${req.params.rolID}/estado:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al cambiar el estado del rol",
@@ -161,7 +174,7 @@ router.patch("/:rolID/estado", async (req, res) => {
 // =================== ELIMINAR ===================
 router.delete("/:rolID", async (req, res) => {
     try {
-        const rolID = req.params.rolID;
+        const rolID = parseInt(req.params.rolID);
         const resultado = await deleteRol(rolID);
 
         res.json({
@@ -171,9 +184,15 @@ router.delete("/:rolID", async (req, res) => {
             filasAfectadas: resultado.rowsAffected,
             timestamp: new Date().toISOString()
         });
-
     } catch (err) {
-        console.error(`Error en DELETE /roles/${req.params.rolID}:`, err.message);
+        console.error(`❌ Error en DELETE /roles/${req.params.rolID}:`, err.message);
+        if (err.message.includes('no existe') || err.message.includes('usuarios asociados')) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: err.message,
+                tipo: "error_validacion"
+            });
+        }
         res.status(500).json({
             estado: false,
             mensaje: "Error al eliminar el rol",

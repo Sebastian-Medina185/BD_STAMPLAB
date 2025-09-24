@@ -19,7 +19,7 @@ async function getTallaById(tallaID) {
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
     
     const result = await pool.request()
-        .input("tallaID", sql.Int, tallaID)
+        .input("tallaID", sql.Int, tallaID)  // Cambiado a Int
         .query("SELECT TallaID, Nombre FROM dbo.Tallas WHERE TallaID = @tallaID");
     
     return result.recordset[0];
@@ -29,8 +29,6 @@ async function getTallaById(tallaID) {
 async function createTalla(talla) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
-
-    
 
     const result = await pool.request()
         .input("nombre", sql.VarChar(4), talla.Nombre)
@@ -48,17 +46,16 @@ async function updateTalla(tallaID, talla) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Verificar que la talla existe
-    const tallaExists = await pool.request()
-        .input("tallaID", sql.VarChar(2), tallaID)
+    const exists = await pool.request()
+        .input("tallaID", sql.Int, tallaID)  // Cambiado a Int
         .query("SELECT COUNT(*) as count FROM dbo.Tallas WHERE TallaID = @tallaID");
     
-    if (tallaExists.recordset[0].count === 0) {
+    if (exists.recordset[0].count === 0) {
         throw new Error('La talla no existe');
     }
 
     const result = await pool.request()
-        .input("tallaID", sql.VarChar(2), tallaID)
+        .input("tallaID", sql.Int, tallaID)  // Cambiado a Int
         .input("nombre", sql.VarChar(4), talla.Nombre)
         .query(`
             UPDATE dbo.Tallas 
@@ -75,18 +72,16 @@ async function deleteTalla(tallaID) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Verificar que la talla existe
-    const tallaExists = await pool.request()
-        .input("tallaID", sql.VarChar(2), tallaID)
+    const exists = await pool.request()
+        .input("tallaID", sql.Int, tallaID)  // Cambiado a Int
         .query("SELECT * FROM dbo.Tallas WHERE TallaID = @tallaID");
     
-    if (tallaExists.recordset.length === 0) {
+    if (exists.recordset.length === 0) {
         throw new Error('La talla no existe');
     }
 
-    // Verificar si tiene productos variantes asociados
     const hasVariantes = await pool.request()
-        .input("tallaID", sql.VarChar(2), tallaID)
+        .input("tallaID", sql.Int, tallaID)  // Cambiado a Int
         .query("SELECT COUNT(*) as count FROM dbo.ProductosVariantes WHERE TallaID = @tallaID");
     
     if (hasVariantes.recordset[0].count > 0) {
@@ -94,12 +89,12 @@ async function deleteTalla(tallaID) {
     }
 
     const result = await pool.request()
-        .input("tallaID", sql.VarChar(2), tallaID)
+        .input("tallaID", sql.Int, tallaID)  // Cambiado a Int
         .query("DELETE FROM dbo.Tallas WHERE TallaID = @tallaID");
     
     return { 
         deleted: true, 
-        talla: tallaExists.recordset[0],
+        talla: exists.recordset[0],
         rowsAffected: result.rowsAffected[0] 
     };
 }

@@ -3,58 +3,145 @@ const express = require("express");
 const router = express.Router();
 const { getTecnicas, getTecnicaById, createTecnica, updateTecnica, deleteTecnica } = require("../models/tecnicas");
 
-// LISTAR
 router.get("/", async (req, res) => {
     try {
         const tecnicas = await getTecnicas();
-        res.json({ estado: true, mensaje: "Técnicas obtenidas", datos: tecnicas, cantidad: tecnicas.length });
+        res.json({
+            estado: true,
+            mensaje: "Técnicas obtenidas exitosamente",
+            datos: tecnicas,
+            cantidad: tecnicas.length,
+            timestamp: new Date().toISOString()
+        });
     } catch (err) {
-        res.status(500).json({ estado: false, mensaje: "Error consultando técnicas", error: err.message });
+        console.error("❌ Error en GET /tecnicas:", err.message);
+        res.status(500).json({
+            estado: false,
+            mensaje: "Error en la consulta de técnicas",
+            error: err.message
+        });
     }
 });
 
-// GET por ID
 router.get("/:tecnicaID", async (req, res) => {
     try {
-        const tecnica = await getTecnicaById(req.params.tecnicaID);
-        if (!tecnica) return res.status(404).json({ estado: false, mensaje: "Técnica no encontrada" });
-        res.json({ estado: true, mensaje: "Técnica encontrada", datos: tecnica });
+        const tecnicaID = parseInt(req.params.tecnicaID);
+        const tecnica = await getTecnicaById(tecnicaID);
+
+        if (!tecnica) {
+            return res.status(404).json({
+                estado: false,
+                mensaje: `Técnica con ID ${tecnicaID} no encontrada`
+            });
+        }
+
+        res.json({
+            estado: true,
+            mensaje: "Técnica encontrada exitosamente",
+            datos: tecnica,
+            timestamp: new Date().toISOString()
+        });
     } catch (err) {
-        res.status(500).json({ estado: false, mensaje: "Error consultando técnica", error: err.message });
+        console.error(`❌ Error en GET /tecnicas/${req.params.tecnicaID}:`, err.message);
+        res.status(500).json({
+            estado: false,
+            mensaje: "Error en la consulta de la técnica",
+            error: err.message
+        });
     }
 });
 
-// CREAR
 router.post("/", async (req, res) => {
     try {
-        const { TecnicaID, Nombre, ImagenTecnica, Descripcion, Estado } = req.body;
-        if (!TecnicaID || !Nombre || !ImagenTecnica || !Descripcion || Estado === undefined) {
-            return res.status(400).json({ estado: false, mensaje: "Todos los campos son requeridos" });
+        const { Nombre, ImagenTecnica, Descripcion, Estado } = req.body;
+
+        if (!Nombre || !ImagenTecnica || !Descripcion || Estado === undefined) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "Todos los campos son requeridos",
+                camposRequeridos: ["Nombre", "ImagenTecnica", "Descripcion", "Estado"]
+            });
         }
-        const nueva = await createTecnica({ TecnicaID, Nombre, ImagenTecnica, Descripcion, Estado });
-        res.status(201).json({ estado: true, mensaje: "Técnica creada", datos: nueva });
+
+        const nuevaTecnica = await createTecnica({ Nombre, ImagenTecnica, Descripcion, Estado });
+
+        res.status(201).json({
+            estado: true,
+            mensaje: "Técnica creada exitosamente",
+            datos: nuevaTecnica,
+            timestamp: new Date().toISOString()
+        });
     } catch (err) {
-        res.status(500).json({ estado: false, mensaje: "Error creando técnica", error: err.message });
+        console.error("❌ Error en POST /tecnicas:", err.message);
+        res.status(500).json({
+            estado: false,
+            mensaje: "Error al crear la técnica",
+            error: err.message
+        });
     }
 });
 
-// EDITAR
 router.put("/:tecnicaID", async (req, res) => {
     try {
-        const actualizada = await updateTecnica(req.params.tecnicaID, req.body);
-        res.json({ estado: true, mensaje: "Técnica actualizada", datos: actualizada });
+        const tecnicaID = parseInt(req.params.tecnicaID);
+        const { Nombre, ImagenTecnica, Descripcion, Estado } = req.body;
+
+        if (!Nombre || !ImagenTecnica || !Descripcion || Estado === undefined) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "Todos los campos son requeridos"
+            });
+        }
+
+        const tecnicaActualizada = await updateTecnica(tecnicaID, { Nombre, ImagenTecnica, Descripcion, Estado });
+
+        res.json({
+            estado: true,
+            mensaje: "Técnica actualizada exitosamente",
+            datos: tecnicaActualizada,
+            timestamp: new Date().toISOString()
+        });
     } catch (err) {
-        res.status(500).json({ estado: false, mensaje: "Error actualizando técnica", error: err.message });
+        console.error(`❌ Error en PUT /tecnicas/${req.params.tecnicaID}:`, err.message);
+        if (err.message.includes('no existe')) {
+            return res.status(404).json({
+                estado: false,
+                mensaje: err.message
+            });
+        }
+        res.status(500).json({
+            estado: false,
+            mensaje: "Error al actualizar la técnica",
+            error: err.message
+        });
     }
 });
 
-// ELIMINAR
 router.delete("/:tecnicaID", async (req, res) => {
     try {
-        const resultado = await deleteTecnica(req.params.tecnicaID);
-        res.json({ estado: true, mensaje: "Técnica eliminada", datosEliminados: resultado.tecnica });
+        const tecnicaID = parseInt(req.params.tecnicaID);
+        const resultado = await deleteTecnica(tecnicaID);
+
+        res.json({
+            estado: true,
+            mensaje: "Técnica eliminada exitosamente",
+            datosEliminados: resultado.tecnica,
+            filasAfectadas: resultado.rowsAffected
+        });
     } catch (err) {
-        res.status(500).json({ estado: false, mensaje: "Error eliminando técnica", error: err.message });
+        console.error(`❌ Error en DELETE /tecnicas/${req.params.tecnicaID}:`, err.message);
+        if (err.message.includes('no existe')) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: err.message,
+                tipo: "error_validacion"
+            });
+        }
+        res.status(500).json({
+            estado: false,
+            mensaje: "Error al eliminar la técnica",
+            error: err.message
+        });
     }
 });
 

@@ -60,7 +60,7 @@ router.post("/", async (req, res) => {
         if (!Nombre) {
             return res.status(400).json({
                 estado: false,
-                mensaje: "TallaID y Nombre son requeridos",
+                mensaje: "Nombre es requerido",
                 camposRequeridos: ["Nombre"]
             });
         }
@@ -68,7 +68,7 @@ router.post("/", async (req, res) => {
         if (Nombre.length > 4) {
             return res.status(400).json({
                 estado: false,
-                mensaje: "TallaID máximo 2 caracteres, Nombre máximo 4 caracteres"
+                mensaje: "Nombre máximo 4 caracteres"
             });
         }
 
@@ -80,7 +80,6 @@ router.post("/", async (req, res) => {
             datos: nuevaTalla,
             timestamp: new Date().toISOString()
         });
-
     } catch (err) {
         console.error("❌ Error en POST /tallas:", err.message);
         res.status(500).json({
@@ -94,7 +93,7 @@ router.post("/", async (req, res) => {
 // =================== EDITAR ===================
 router.put("/:tallaID", async (req, res) => {
     try {
-        const tallaID = req.params.tallaID;
+        const tallaID = parseInt(req.params.tallaID);
         const { Nombre } = req.body;
 
         if (!Nombre) {
@@ -112,7 +111,6 @@ router.put("/:tallaID", async (req, res) => {
             datos: tallaActualizada,
             timestamp: new Date().toISOString()
         });
-
     } catch (err) {
         console.error(`❌ Error en PUT /tallas/${req.params.tallaID}:`, err.message);
         if (err.message.includes('no existe')) {
@@ -132,17 +130,15 @@ router.put("/:tallaID", async (req, res) => {
 // =================== ELIMINAR ===================
 router.delete("/:tallaID", async (req, res) => {
     try {
-        const tallaID = req.params.tallaID;
+        const tallaID = parseInt(req.params.tallaID);
         const resultado = await deleteTalla(tallaID);
 
         res.json({
             estado: true,
             mensaje: "Talla eliminada exitosamente",
             datosEliminados: resultado.talla,
-            filasAfectadas: resultado.rowsAffected,
-            timestamp: new Date().toISOString()
+            filasAfectadas: resultado.rowsAffected
         });
-
     } catch (err) {
         console.error(`❌ Error en DELETE /tallas/${req.params.tallaID}:`, err.message);
         if (err.message.includes('no existe') || err.message.includes('productos variantes')) {

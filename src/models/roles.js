@@ -32,7 +32,7 @@ async function getRolById(rolID) {
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
     
     const result = await pool.request()
-        .input("rolID", sql.VarChar(2), rolID)
+        .input("rolID", sql.Int, rolID)  // Cambiado a Int
         .query("SELECT RolID, Nombre, Descripcion, Estado FROM dbo.Roles WHERE RolID = @rolID");
     
     return result.recordset[0];
@@ -43,24 +43,14 @@ async function createRol(rol) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Verificar que el RolID no existe
-    const rolExists = await pool.request()
-        .input("rolID", sql.VarChar(2), rol.RolID)
-        .query("SELECT COUNT(*) as count FROM dbo.Roles WHERE RolID = @rolID");
-    
-    if (rolExists.recordset[0].count > 0) {
-        throw new Error('Ya existe un rol con este ID');
-    }
-
     const result = await pool.request()
-        .input("rolID", sql.VarChar(2), rol.RolID)
         .input("nombre", sql.VarChar(15), rol.Nombre)
         .input("descripcion", sql.VarChar(100), rol.Descripcion || null)
         .input("estado", sql.Bit, rol.Estado !== undefined ? rol.Estado : true)
         .query(`
-            INSERT INTO dbo.Roles (RolID, Nombre, Descripcion, Estado)
-            VALUES (@rolID, @nombre, @descripcion, @estado);
-            SELECT * FROM dbo.Roles WHERE RolID = @rolID;
+            INSERT INTO dbo.Roles (Nombre, Descripcion, Estado)
+            VALUES (@nombre, @descripcion, @estado);
+            SELECT * FROM dbo.Roles WHERE RolID = SCOPE_IDENTITY();
         `);
     
     return result.recordset[0];
@@ -71,18 +61,16 @@ async function updateRol(rolID, rol) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Verificar que el rol existe
-    const rolExists = await pool.request()
-        .input("rolID", sql.VarChar(2), rolID)
+    const exists = await pool.request()
+        .input("rolID", sql.Int, rolID)
         .query("SELECT COUNT(*) as count FROM dbo.Roles WHERE RolID = @rolID");
     
-    if (rolExists.recordset[0].count === 0) {
+    if (exists.recordset[0].count === 0) {
         throw new Error('El rol no existe');
     }
 
-    // Construir la consulta de actualización dinámicamente
     let updateFields = [];
-    let request = pool.request().input("rolID", sql.VarChar(2), rolID);
+    const request = pool.request().input("rolID", sql.Int, rolID);
 
     if (rol.Nombre) {
         updateFields.push("Nombre = @nombre");
@@ -116,31 +104,32 @@ async function deleteRol(rolID) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Usa un tipo correcto, aquí asumo texto hasta 50 chars
-    const rolExists = await pool.request()
-        .input("rolID", sql.VarChar(50), rolID)
+    const exists = await pool.request()
+        .input("rolID", sql.Int, rolID)
         .query("SELECT * FROM dbo.Roles WHERE RolID = @rolID");
 
-    if (rolExists.recordset.length === 0) {
+    if (exists.recordset.length === 0) {
         throw new Error('El rol no existe');
     }
 
-    // Verificar si tiene usuarios asociados
     const hasUsuarios = await pool.request()
-        .input("rolID", sql.VarChar(50), rolID)
+        .input("rolID", sql.Int, rolID)
         .query("SELECT COUNT(*) as count FROM dbo.Usuarios WHERE RolID = @rolID");
 
     if (hasUsuarios.recordset[0].count > 0) {
         throw new Error('No se puede eliminar el rol porque tiene usuarios asociados');
     }
 
-    await pool.request()
-        .input("rolID", sql.VarChar(50), rolID)
+    const result = await pool.request()
+        .input("rolID", sql.Int, rolID)
         .query("DELETE FROM dbo.Roles WHERE RolID = @rolID");
 
-    return { deleted: true, rol: rolExists.recordset[0] };
+    return { 
+        deleted: true, 
+        rol: exists.recordset[0],
+        rowsAffected: result.rowsAffected[0]
+    };
 }
-
 
 // =================== CAMBIAR ESTADO ===================
 async function cambiarEstadoRol(rolID, estado) {
@@ -148,7 +137,7 @@ async function cambiarEstadoRol(rolID, estado) {
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
     const result = await pool.request()
-        .input("rolID", sql.VarChar(2), rolID)
+        .input("rolID", sql.Int, rolID)
         .input("estado", sql.Bit, estado)
         .query(`
             UPDATE dbo.Roles 
