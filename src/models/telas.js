@@ -1,7 +1,8 @@
-// src/models/telas.js
+// =================================
+// src/models/telas.js - ACTUALIZADO CON PATRÓN COLORES
+// =================================
 const { sql, poolPromise } = require("../../db");
 
-// =================== LISTAR ===================
 async function getTelas() {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
@@ -25,7 +26,7 @@ async function getTelaById(telaID) {
     return result.recordset[0];
 }
 
-// =================== CREAR ===================
+// CREAR - Solo recibe Nombre (TelaID manual)
 async function createTela(tela) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
@@ -51,12 +52,10 @@ async function createTela(tela) {
     return result.recordset[0];
 }
 
-// =================== EDITAR ===================
 async function updateTela(telaID, tela) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Verificar que la tela existe
     const telaExists = await pool.request()
         .input("telaID", sql.VarChar(2), telaID)
         .query("SELECT COUNT(*) as count FROM dbo.Telas WHERE TelaID = @telaID");
@@ -78,12 +77,10 @@ async function updateTela(telaID, tela) {
     return result.recordset[0];
 }
 
-// =================== ELIMINAR ===================
 async function deleteTela(telaID) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Verificar que la tela existe
     const telaExists = await pool.request()
         .input("telaID", sql.VarChar(2), telaID)
         .query("SELECT * FROM dbo.Telas WHERE TelaID = @telaID");
@@ -92,7 +89,6 @@ async function deleteTela(telaID) {
         throw new Error('La tela no existe');
     }
 
-    // Verificar si tiene productos asociados
     const hasProductos = await pool.request()
         .input("telaID", sql.VarChar(2), telaID)
         .query("SELECT COUNT(*) as count FROM dbo.Productos WHERE TelaID = @telaID");
@@ -112,10 +108,4 @@ async function deleteTela(telaID) {
     };
 }
 
-module.exports = { 
-    getTelas, 
-    getTelaById, 
-    createTela, 
-    updateTela, 
-    deleteTela
-};
+module.exports = { getTelas, getTelaById, createTela, updateTela, deleteTela };

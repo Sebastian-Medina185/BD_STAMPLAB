@@ -26,7 +26,8 @@ router.get("/", async (req, res) => {
 
 router.get("/:colorID", async (req, res) => {
     try {
-        const colorID = req.params.colorID;
+        
+        const colorID = parseInt(req.params.colorID);
         const color = await getColorById(colorID);
 
         if (!color) {
@@ -52,27 +53,30 @@ router.get("/:colorID", async (req, res) => {
     }
 });
 
-// =================== CREAR ===================
+
+
+
+// =================== CREAR =================== //
 router.post("/", async (req, res) => {
     try {
-        const { ColorID, Nombre } = req.body;
+        const { Nombre } = req.body; // ❌ ELIMINAR: ColorID
 
-        if (!ColorID || !Nombre) {
+        if (!Nombre) {
             return res.status(400).json({
                 estado: false,
-                mensaje: "ColorID y Nombre son requeridos",
-                camposRequeridos: ["ColorID", "Nombre"]
+                mensaje: "Nombre es requerido",
+                camposRequeridos: ["Nombre"] // ⚠ CAMBIAR: solo Nombre
             });
         }
 
-        if (ColorID.length > 3 || Nombre.length > 30) {
+        if (Nombre.length > 30) { // ❌ ELIMINAR: validación de ColorID
             return res.status(400).json({
                 estado: false,
-                mensaje: "ColorID máximo 3 caracteres, Nombre máximo 30 caracteres"
+                mensaje: "Nombre máximo 30 caracteres"
             });
         }
 
-        const nuevoColor = await createColor({ ColorID, Nombre });
+        const nuevoColor = await createColor({ Nombre }); // ❌ ELIMINAR: ColorID
 
         res.status(201).json({
             estado: true,
@@ -83,13 +87,7 @@ router.post("/", async (req, res) => {
 
     } catch (err) {
         console.error("❌ Error en POST /colores:", err.message);
-        if (err.message.includes('Ya existe')) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: err.message,
-                tipo: "error_validacion"
-            });
-        }
+        // ❌ ELIMINAR: verificación de 'Ya existe'
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear el color",
@@ -98,10 +96,14 @@ router.post("/", async (req, res) => {
     }
 });
 
+
+
+
 // =================== EDITAR ===================
 router.put("/:colorID", async (req, res) => {
     try {
-        const colorID = req.params.colorID;
+
+        const colorID = parseInt(req.params.colorID);
         const { Nombre } = req.body;
 
         if (!Nombre) {
@@ -139,15 +141,15 @@ router.put("/:colorID", async (req, res) => {
 // =================== ELIMINAR ===================
 router.delete("/:colorID", async (req, res) => {
     try {
-        const colorID = req.params.colorID;
+
+        const colorID = parseInt(req.params.colorID);
         const resultado = await deleteColor(colorID);
 
         res.json({
             estado: true,
             mensaje: "Color eliminado exitosamente",
             datosEliminados: resultado.color,
-            filasAfectadas: resultado.rowsAffected,
-            timestamp: new Date().toISOString()
+            filasAfectadas: resultado.rowsAffected
         });
 
     } catch (err) {

@@ -82,47 +82,31 @@ router.get("/:rolID", async (req, res) => {
 
 // =================== CREAR ===================
 router.post("/", async (req, res) => {
+    console.log("✅ Se llamó POST /roles");
+    console.log("Datos recibidos:", req.body);
+
     try {
         const { RolID, Nombre, Descripcion, Estado } = req.body;
 
         if (!RolID || !Nombre) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: "RolID y Nombre son requeridos",
-                camposRequeridos: ["RolID", "Nombre"]
-            });
+            return res.status(400).json({ estado: false, mensaje: "RolID y Nombre requeridos" });
         }
 
-        const nuevoRol = await createRol({ 
-            RolID, 
-            Nombre, 
-            Descripcion, 
-            Estado: Estado !== undefined ? Estado : true 
+        const nuevoRol = await createRol({
+            RolID,
+            Nombre,
+            Descripcion,
+            Estado: Estado !== undefined ? Estado : true,
         });
 
-        res.status(201).json({
-            estado: true,
-            mensaje: "Rol creado exitosamente",
-            datos: nuevoRol,
-            timestamp: new Date().toISOString()
-        });
-
+        res.status(201).json({ estado: true, mensaje: "Rol creado", datos: nuevoRol });
     } catch (err) {
-        console.error("Error en POST /roles:", err.message);
-        if (err.message.includes('Ya existe')) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: err.message,
-                tipo: "error_validacion"
-            });
-        }
-        res.status(500).json({
-            estado: false,
-            mensaje: "Error al crear el rol",
-            error: err.message
-        });
+        console.error("Error al crear rol:", err.message);
+        res.status(500).json({ estado: false, mensaje: "Error al crear rol", error: err.message });
     }
 });
+
+
 
 // =================== EDITAR ===================
 router.put("/:rolID", async (req, res) => {

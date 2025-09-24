@@ -19,7 +19,7 @@ async function getTallaById(tallaID) {
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
     
     const result = await pool.request()
-        .input("tallaID", sql.VarChar(2), tallaID)
+        .input("tallaID", sql.Int, tallaID)
         .query("SELECT TallaID, Nombre FROM dbo.Tallas WHERE TallaID = @tallaID");
     
     return result.recordset[0];
@@ -30,22 +30,14 @@ async function createTalla(talla) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Verificar que el TallaID no existe
-    const tallaExists = await pool.request()
-        .input("tallaID", sql.VarChar(2), talla.TallaID)
-        .query("SELECT COUNT(*) as count FROM dbo.Tallas WHERE TallaID = @tallaID");
     
-    if (tallaExists.recordset[0].count > 0) {
-        throw new Error('Ya existe una talla con este ID');
-    }
 
     const result = await pool.request()
-        .input("tallaID", sql.VarChar(2), talla.TallaID)
         .input("nombre", sql.VarChar(4), talla.Nombre)
         .query(`
-            INSERT INTO dbo.Tallas (TallaID, Nombre)
-            VALUES (@tallaID, @nombre);
-            SELECT * FROM dbo.Tallas WHERE TallaID = @tallaID;
+            INSERT INTO dbo.Tallas (Nombre)
+            VALUES (@nombre);
+            SELECT * FROM dbo.Tallas WHERE TallaID = SCOPE_IDENTITY();
         `);
     
     return result.recordset[0];

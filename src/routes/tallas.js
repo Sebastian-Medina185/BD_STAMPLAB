@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
 
 router.get("/:tallaID", async (req, res) => {
     try {
-        const tallaID = req.params.tallaID;
+        const tallaID = parseInt(req.params.tallaID);
         const talla = await getTallaById(tallaID);
 
         if (!talla) {
@@ -55,24 +55,24 @@ router.get("/:tallaID", async (req, res) => {
 // =================== CREAR ===================
 router.post("/", async (req, res) => {
     try {
-        const { TallaID, Nombre } = req.body;
+        const { Nombre } = req.body;
 
-        if (!TallaID || !Nombre) {
+        if (!Nombre) {
             return res.status(400).json({
                 estado: false,
                 mensaje: "TallaID y Nombre son requeridos",
-                camposRequeridos: ["TallaID", "Nombre"]
+                camposRequeridos: ["Nombre"]
             });
         }
 
-        if (TallaID.length > 2 || Nombre.length > 4) {
+        if (Nombre.length > 4) {
             return res.status(400).json({
                 estado: false,
                 mensaje: "TallaID máximo 2 caracteres, Nombre máximo 4 caracteres"
             });
         }
 
-        const nuevaTalla = await createTalla({ TallaID, Nombre });
+        const nuevaTalla = await createTalla({ Nombre });
 
         res.status(201).json({
             estado: true,
@@ -83,13 +83,6 @@ router.post("/", async (req, res) => {
 
     } catch (err) {
         console.error("❌ Error en POST /tallas:", err.message);
-        if (err.message.includes('Ya existe')) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: err.message,
-                tipo: "error_validacion"
-            });
-        }
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear la talla",
