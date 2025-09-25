@@ -1,25 +1,20 @@
 // src/routes/productos.js
 const express = require("express");
 const router = express.Router();
+const { getProductos, getProductoById, createProducto, updateProducto, deleteProducto } = require("../models/productos");
 
-// GET todos los productos
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
     try {
-        const productosPrueba = [
-            { id: 1, nombre: "Camiseta Básica", precio: 25000, categoria: "Ropa" },
-            { id: 2, nombre: "Hoodie Personalizada", precio: 45000, categoria: "Ropa" },
-            { id: 3, nombre: "Taza Sublimada", precio: 15000, categoria: "Accesorios" }
-        ];
-
+        const productos = await getProductos();
         res.json({
             estado: true,
-            mensaje: "Productos obtenidos exitosamente (datos de prueba)",
-            datos: productosPrueba,
-            cantidad: productosPrueba.length,
+            mensaje: "Productos obtenidos exitosamente",
+            datos: productos,
+            cantidad: productos.length,
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /productos:", err);
+        console.error("❌ Error en GET /productos:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de productos",
@@ -28,32 +23,15 @@ router.get("/", (req, res) => {
     }
 });
 
-// GET producto por ID
-router.get("/:id", (req, res) => {
+router.get("/:productoID", async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
-        
-        if (isNaN(id) || id <= 0) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: "ID inválido. Debe ser un número positivo",
-                idRecibido: req.params.id
-            });
-        }
+        const productoID = parseInt(req.params.productoID);
+        const producto = await getProductoById(productoID);
 
-        const productosPrueba = [
-            { id: 1, nombre: "Camiseta Básica", precio: 25000, categoria: "Ropa" },
-            { id: 2, nombre: "Hoodie Personalizada", precio: 45000, categoria: "Ropa" },
-            { id: 3, nombre: "Taza Sublimada", precio: 15000, categoria: "Accesorios" }
-        ];
-
-        const producto = productosPrueba.find(p => p.id === id);
-        
         if (!producto) {
             return res.status(404).json({
                 estado: false,
-                mensaje: `Producto con ID ${id} no encontrado`,
-                sugerencia: "Usa IDs 1, 2 o 3 para datos de prueba"
+                mensaje: `Producto con ID ${productoID} no encontrado`
             });
         }
 
@@ -64,10 +42,119 @@ router.get("/:id", (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /productos/${req.params.id}:`, err);
+        console.error(`❌ Error en GET /productos/${req.params.productoID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta del producto",
+            error: err.message
+        });
+    }
+});
+
+router.post("/", async (req, res) => {
+    try {
+        const { Nombre, Descripcion, TelaID } = req.body;
+
+        if (!Nombre || !TelaID) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "Nombre y TelaID son requeridos",
+                camposRequeridos: ["Nombre", "TelaID"]
+            });
+        }
+
+        const nuevoProducto = await createProducto({
+            Nombre,
+            Descripcion,
+            TelaID
+        });
+
+        res.status(201).json({
+            estado: true,
+            mensaje: "Producto creado exitosamente",
+            datos: nuevoProducto,
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        console.error("❌ Error en POST /productos:", err.message);
+        if (err.message.includes('No existe ninguna tela')) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: err.message,
+                tipo: "error_validacion"
+            });
+        }
+        res.status(500).json({
+            estado: false,
+            mensaje: "Error al crear el producto",
+            error: err.message
+        });
+    }
+});
+
+router.put("/:productoID", async (req, res) => {
+    try {
+        const productoID = parseInt(req.params.productoID);
+        const { Nombre, Descripcion, TelaID } = req.body;
+
+        if (!Nombre || !TelaID) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "Nombre y TelaID son requeridos"
+            });
+        }
+
+        const productoActualizado = await updateProducto(productoID, { 
+            Nombre, 
+            Descripcion, 
+            TelaID 
+        });
+
+        res.json({
+            estado: true,
+            mensaje: "Producto actualizado exitosamente",
+            datos: productoActualizado,
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        console.error(`❌ Error en PUT /productos/${req.params.productoID}:`, err.message);
+        if (err.message.includes('no existe')) {
+            return res.status(404).json({
+                estado: false,
+                mensaje: err.message
+            });
+        }
+        res.status(500).json({
+            estado: false,
+            mensaje: "Error al actualizar el producto",
+            error: err.message
+        });
+    }
+});
+
+router.delete("/:productoID", async (req, res) => {
+    try {
+        const productoID = parseInt(req.params.productoID);
+        const resultado = await deleteProducto(productoID);
+
+        res.json({
+            estado: true,
+            mensaje: "Producto eliminado exitosamente",
+            datosEliminados: resultado.producto,
+            filasAfectadas: resultado.rowsAffected,
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        console.error(`❌ Error en DELETE /productos/${req.params.productoID}:`, err.message);
+        if (err.message.includes('no existe')) {
+            return res.status(404).json({
+                estado: false,
+                mensaje: err.message
+            });
+        }
+        res.status(500).json({
+            estado: false,
+            mensaje: "Error al eliminar el producto",
             error: err.message
         });
     }
