@@ -46,7 +46,7 @@ const routes = [
     { path: './src/routes/cotizaciones', name: 'cotizaciones', endpoint: '/cotizaciones' },
     { path: './src/routes/detallecotizacion', name: 'detalleCotizacion', endpoint: '/detalleCotizacion' },
     { path: './src/routes/detallediseños', name: 'detalleDiseno', endpoint: '/detalleDiseno' },
-    { path: './src/routes/detallepedidos', name: 'detallePedido', endpoint: '/detallePedido' },
+    { path: './src/routes/detallepedido', name: 'detallePedido', endpoint: '/detallePedido' },
     { path: './src/routes/diseños', name: 'disenos', endpoint: '/disenos' },
     { path: './src/routes/insumos', name: 'insumos', endpoint: '/insumos' },
     { path: './src/routes/partes', name: 'partes', endpoint: '/partes' },
