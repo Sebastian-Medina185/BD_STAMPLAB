@@ -20,7 +20,7 @@ async function getTelaById(telaID) {
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
     
     const result = await pool.request()
-        .input("telaID", sql.Int, telaID) // CAMBIO: VarChar(2) → Int
+        .input("telaID", sql.Int, telaID) 
         .query("SELECT TelaID, Nombre FROM dbo.Telas WHERE TelaID = @telaID");
     
     return result.recordset[0];
@@ -49,7 +49,7 @@ async function updateTela(telaID, tela) {
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
     const telaExists = await pool.request()
-        .input("telaID", sql.Int, telaID) // CAMBIO: VarChar(2) → Int
+        .input("telaID", sql.Int, telaID) 
         .query("SELECT COUNT(*) as count FROM dbo.Telas WHERE TelaID = @telaID");
     
     if (telaExists.recordset[0].count === 0) {
@@ -57,7 +57,7 @@ async function updateTela(telaID, tela) {
     }
 
     const result = await pool.request()
-        .input("telaID", sql.Int, telaID) // CAMBIO: VarChar(2) → Int
+        .input("telaID", sql.Int, telaID) 
         .input("nombre", sql.VarChar(40), tela.Nombre)
         .query(`
             UPDATE dbo.Telas 
@@ -74,7 +74,7 @@ async function deleteTela(telaID) {
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
     const telaExists = await pool.request()
-        .input("telaID", sql.Int, telaID) // CAMBIO: VarChar(2) → Int
+        .input("telaID", sql.Int, telaID) 
         .query("SELECT * FROM dbo.Telas WHERE TelaID = @telaID");
     
     if (telaExists.recordset.length === 0) {
@@ -82,7 +82,7 @@ async function deleteTela(telaID) {
     }
 
     const hasProductos = await pool.request()
-        .input("telaID", sql.Int, telaID) // CAMBIO: VarChar(2) → Int
+        .input("telaID", sql.Int, telaID) 
         .query("SELECT COUNT(*) as count FROM dbo.Productos WHERE TelaID = @telaID");
     
     if (hasProductos.recordset[0].count > 0) {
@@ -90,7 +90,7 @@ async function deleteTela(telaID) {
     }
 
     const result = await pool.request()
-        .input("telaID", sql.Int, telaID) // CAMBIO: VarChar(2) → Int
+        .input("telaID", sql.Int, telaID) 
         .query("DELETE FROM dbo.Telas WHERE TelaID = @telaID");
     
     return { 

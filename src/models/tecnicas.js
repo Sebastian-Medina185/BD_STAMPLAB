@@ -18,7 +18,7 @@ async function getTecnicaById(tecnicaID) {
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
     const result = await pool.request()
-        .input("tecnicaID", sql.Int, tecnicaID) // Cambiado de VarChar a Int
+        .input("tecnicaID", sql.Int, tecnicaID) 
         .query("SELECT TecnicaID, Nombre, ImagenTecnica, Descripcion, Estado FROM dbo.Tecnicas WHERE TecnicaID = @tecnicaID");
 
     return result.recordset[0];

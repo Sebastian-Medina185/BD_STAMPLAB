@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /tecnicas:", err.message);
+        console.error("Error en GET /tecnicas:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de técnicas",
@@ -42,7 +42,7 @@ router.get("/:tecnicaID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /tecnicas/${req.params.tecnicaID}:`, err.message);
+        console.error(`Error en GET /tecnicas/${req.params.tecnicaID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de la técnica",
@@ -72,7 +72,7 @@ router.post("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en POST /tecnicas:", err.message);
+        console.error("Error en POST /tecnicas:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear la técnica",
@@ -102,7 +102,7 @@ router.put("/:tecnicaID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en PUT /tecnicas/${req.params.tecnicaID}:`, err.message);
+        console.error(`Error en PUT /tecnicas/${req.params.tecnicaID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
@@ -129,7 +129,7 @@ router.delete("/:tecnicaID", async (req, res) => {
             filasAfectadas: resultado.rowsAffected
         });
     } catch (err) {
-        console.error(`❌ Error en DELETE /tecnicas/${req.params.tecnicaID}:`, err.message);
+        console.error(`Error en DELETE /tecnicas/${req.params.tecnicaID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(400).json({
                 estado: false,

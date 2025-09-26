@@ -20,7 +20,7 @@ async function getColorById(colorID) {
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
     const result = await pool.request()
-        .input("colorID", sql.Int, colorID) // ⚠ CAMBIAR: VarChar(3) → Int
+        .input("colorID", sql.Int, colorID) 
         .query("SELECT ColorID, Nombre FROM dbo.Colores WHERE ColorID = @colorID");
 
     return result.recordset[0];

@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /partes:", err.message);
+        console.error("Error en GET /partes:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de partes",
@@ -43,7 +43,7 @@ router.get("/:parteID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /partes/${req.params.parteID}:`, err.message);
+        console.error(`Error en GET /partes/${req.params.parteID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de la parte",
@@ -88,7 +88,7 @@ router.post("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en POST /partes:", err.message);
+        console.error("Error en POST /partes:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear la parte",
@@ -119,7 +119,7 @@ router.put("/:parteID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en PUT /partes/${req.params.parteID}:`, err.message);
+        console.error(`Error en PUT /partes/${req.params.parteID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
@@ -148,7 +148,7 @@ router.delete("/:parteID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en DELETE /partes/${req.params.parteID}:`, err.message);
+        console.error(`Error en DELETE /partes/${req.params.parteID}:`, err.message);
         if (err.message.includes('no existe') || err.message.includes('diseños asociados')) {
             return res.status(400).json({
                 estado: false,

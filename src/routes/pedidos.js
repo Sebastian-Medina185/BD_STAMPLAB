@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /pedidos:", err.message);
+        console.error("Error en GET /pedidos:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de pedidos",
@@ -41,7 +41,7 @@ router.get("/:pedidoID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /pedidos/${req.params.pedidoID}:`, err.message);
+        console.error(`Error en GET /pedidos/${req.params.pedidoID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta del pedido",
@@ -85,7 +85,7 @@ router.post("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en POST /pedidos:", err.message);
+        console.error("Error en POST /pedidos:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear el pedido",
@@ -115,7 +115,7 @@ router.put("/:pedidoID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en PUT /pedidos/${req.params.pedidoID}:`, err.message);
+        console.error(`Error en PUT /pedidos/${req.params.pedidoID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
@@ -143,7 +143,7 @@ router.delete("/:pedidoID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en DELETE /pedidos/${req.params.pedidoID}:`, err.message);
+        console.error(`Error en DELETE /pedidos/${req.params.pedidoID}:`, err.message);
         if (err.message.includes('no existe') || err.message.includes('detalles asociados')) {
             return res.status(400).json({
                 estado: false,

@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /detallePedido:", err.message);
+        console.error("Error en GET /detallePedido:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de detalles de pedido",
@@ -45,7 +45,7 @@ router.get("/:id", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /detallePedido/${req.params.id}:`, err.message);
+        console.error(`Error en GET /detallePedido/${req.params.id}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta del detalle de pedido",
@@ -79,7 +79,7 @@ router.post("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en POST /detallePedido:", err.message);
+        console.error("Error en POST /detallePedido:", err.message);
         if (err.message.includes('No existe')) {
             return res.status(400).json({
                 estado: false,

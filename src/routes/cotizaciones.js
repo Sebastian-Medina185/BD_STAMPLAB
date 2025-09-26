@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /cotizaciones:", err.message);
+        console.error("Error en GET /cotizaciones:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de cotizaciones",
@@ -42,7 +42,7 @@ router.get("/:cotizacionID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /cotizaciones/${req.params.cotizacionID}:`, err.message);
+        console.error(`Error en GET /cotizaciones/${req.params.cotizacionID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de la cotización",
@@ -77,7 +77,7 @@ router.post("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en POST /cotizaciones:", err.message);
+        console.error("Error en POST /cotizaciones:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear la cotización",
@@ -112,7 +112,7 @@ router.put("/:cotizacionID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en PUT /cotizaciones/${req.params.cotizacionID}:`, err.message);
+        console.error(`Error en PUT /cotizaciones/${req.params.cotizacionID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
@@ -140,7 +140,7 @@ router.delete("/:cotizacionID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en DELETE /cotizaciones/${req.params.cotizacionID}:`, err.message);
+        console.error(`Error en DELETE /cotizaciones/${req.params.cotizacionID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,

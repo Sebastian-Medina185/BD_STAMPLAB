@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /tallas:", err.message);
+        console.error("Error en GET /tallas:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de tallas",
@@ -43,7 +43,7 @@ router.get("/:tallaID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /tallas/${req.params.tallaID}:`, err.message);
+        console.error(`Error en GET /tallas/${req.params.tallaID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de la talla",
@@ -81,7 +81,7 @@ router.post("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en POST /tallas:", err.message);
+        console.error("Error en POST /tallas:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear la talla",
@@ -112,7 +112,7 @@ router.put("/:tallaID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en PUT /tallas/${req.params.tallaID}:`, err.message);
+        console.error(`Error en PUT /tallas/${req.params.tallaID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
@@ -140,7 +140,7 @@ router.delete("/:tallaID", async (req, res) => {
             filasAfectadas: resultado.rowsAffected
         });
     } catch (err) {
-        console.error(`❌ Error en DELETE /tallas/${req.params.tallaID}:`, err.message);
+        console.error(`Error en DELETE /tallas/${req.params.tallaID}:`, err.message);
         if (err.message.includes('no existe') || err.message.includes('productos variantes')) {
             return res.status(400).json({
                 estado: false,

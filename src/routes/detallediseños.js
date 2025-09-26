@@ -8,7 +8,7 @@ router.get("/", async (req, res) => {
         const data = await getDetalleDiseno();
         res.json(data);
     } catch (err) {
-        console.error("❌ Error en /detalleDiseno:", err);
+        console.error("Error en /detalleDiseno:", err);
         res.status(500).send("Error en la consulta");
     }
 });
@@ -19,7 +19,7 @@ router.get("/:id", async (req, res) => {
         if (!detalle) return res.status(404).send("Detalle diseño no encontrado");
         res.json(detalle);
     } catch (err) {
-        console.error("❌ Error en /detalleDiseno/:id:", err);
+        console.error("Error en /detalleDiseno/:id:", err);
         res.status(500).send("Error en la consulta");
     }
 });

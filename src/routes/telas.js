@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /telas:", err.message);
+        console.error("Error en GET /telas:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de telas",
@@ -51,7 +51,7 @@ router.get("/:telaID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /telas/${req.params.telaID}:`, err.message);
+        console.error(`Error en GET /telas/${req.params.telaID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de la tela",
@@ -90,7 +90,7 @@ router.post("/", async (req, res) => {
         });
 
     } catch (err) {
-        console.error("❌ Error en POST /telas:", err.message);
+        console.error("Error en POST /telas:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear la tela",
@@ -136,7 +136,7 @@ router.put("/:telaID", async (req, res) => {
         });
 
     } catch (err) {
-        console.error(`❌ Error en PUT /telas/${req.params.telaID}:`, err.message);
+        console.error(`Error en PUT /telas/${req.params.telaID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
@@ -174,7 +174,7 @@ router.delete("/:telaID", async (req, res) => {
         });
 
     } catch (err) {
-        console.error(`❌ Error en DELETE /telas/${req.params.telaID}:`, err.message);
+        console.error(`Error en DELETE /telas/${req.params.telaID}:`, err.message);
         if (err.message.includes('no existe') || err.message.includes('productos asociados')) {
             return res.status(400).json({
                 estado: false,

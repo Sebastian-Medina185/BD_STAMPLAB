@@ -20,7 +20,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /productosVariantes:", err.message);
+        console.error("Error en GET /productosVariantes:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de variantes",
@@ -48,7 +48,7 @@ router.get("/:id", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /productosVariantes/${req.params.id}:`, err.message);
+        console.error(`Error en GET /productosVariantes/${req.params.id}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de la variante",
@@ -86,7 +86,7 @@ router.post("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en POST /productosVariantes:", err.message);
+        console.error("Error en POST /productosVariantes:", err.message);
         if (err.message.includes('No existe')) {
             return res.status(400).json({
                 estado: false,
@@ -131,7 +131,7 @@ router.put("/:id", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en PUT /productosVariantes/${req.params.id}:`, err.message);
+        console.error(`Error en PUT /productosVariantes/${req.params.id}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
@@ -159,7 +159,7 @@ router.delete("/:id", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en DELETE /productosVariantes/${req.params.id}:`, err.message);
+        console.error(`Error en DELETE /productosVariantes/${req.params.id}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,

@@ -22,18 +22,18 @@ function safeRequire(routePath, routeName) {
         if (fs.existsSync(fullPath)) {
             const route = require(fullPath);
             if (typeof route === 'function') {
-                console.log(`✅ Ruta cargada: ${routeName}`);
+                console.log(`Ruta cargada: ${routeName}`);
                 return route;
             } else {
-                console.log(`⚠️  Ruta ${routeName} no exporta una función válida`);
+                console.log(`Ruta ${routeName} no exporta una función válida`);
                 return null;
             }
         } else {
-            console.log(`⚠️  Archivo no encontrado: ${fullPath}`);
+            console.log(`Archivo no encontrado: ${fullPath}`);
             return null;
         }
     } catch (error) {
-        console.log(`❌ Error cargando ruta ${routeName}:`, error.message);
+        console.log(`Error cargando ruta ${routeName}:`, error.message);
         return null;
     }
 }
@@ -60,7 +60,7 @@ const routes = [
 ];
 
 // Cargar rutas de forma segura
-console.log('\n🔧 Cargando rutas...');
+console.log('\n Cargando rutas...');
 const loadedRoutes = [];
 const availableEndpoints = {};
 
@@ -73,14 +73,14 @@ routes.forEach(route => {
     }
 });
 
-console.log(`\n✅ Rutas cargadas exitosamente: ${loadedRoutes.length}/${routes.length}`);
-console.log(`📋 Rutas disponibles: ${loadedRoutes.join(', ')}`);
+console.log(`\n Rutas cargadas exitosamente: ${loadedRoutes.length}/${routes.length}`);
+console.log(` Rutas disponibles: ${loadedRoutes.join(', ')}`);
 
 // Ruta principal
 app.get('/', (req, res) => {
     res.json({
         estado: true,
-        mensaje: 'Bienvenido a mi API StampLab ✅',
+        mensaje: 'Bienvenido a mi API StampLab ',
         version: '1.0.0',
         database: 'StampLab',
         rutasCargadas: loadedRoutes.length,
@@ -107,7 +107,7 @@ app.get('/test-db', async (req, res) => {
         
         res.json({
             estado: true,
-            mensaje: 'Conexión a base de datos exitosa ✅',
+            mensaje: 'Conexión a base de datos exitosa ',
             database: 'StampLab',
             resultado: result.recordset
         });
@@ -115,7 +115,7 @@ app.get('/test-db', async (req, res) => {
         console.error('Error en /test-db:', error);
         res.status(500).json({
             estado: false,
-            mensaje: 'Error conectando a la base de datos ❌',
+            mensaje: 'Error conectando a la base de datos ',
             error: error.message,
             sugerencia: 'Verifica tu archivo .env y la conexión a SQL Server'
         });
@@ -146,21 +146,21 @@ app.use((error, req, res, next) => {
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => { 
-    console.log(`\n🚀 Servidor corriendo en http://localhost:${PORT}`);
-    console.log(`🗄️  Base de datos: StampLab`);
-    console.log(`📋 Endpoints principales:`);
+    console.log(`\n Servidor corriendo en http://localhost:${PORT}`);
+    console.log(` Base de datos: StampLab`);
+    console.log(` Endpoints principales:`);
     console.log(`   - GET / (información de la API)`);
     console.log(`   - GET /test-db (prueba de conexión)`);
     
     if (loadedRoutes.length > 0) {
-        console.log(`📊 Endpoints de datos disponibles:`);
+        console.log(` Endpoints de datos disponibles:`);
         Object.keys(availableEndpoints).forEach(key => {
             console.log(`   - GET ${availableEndpoints[key]}`);
             console.log(`   - GET ${availableEndpoints[key]}/:id`);
         });
     }
     
-    console.log(`\n🔧 Para crear más rutas, agrega archivos en src/routes/`);
-    console.log(`📝 Total de rutas intentadas: ${routes.length}`);
-    console.log(`✅ Rutas cargadas exitosamente: ${loadedRoutes.length}`);
+    console.log(`\n Para crear más rutas, agrega archivos en src/routes/`);
+    console.log(` Total de rutas intentadas: ${routes.length}`);
+    console.log(` Rutas cargadas exitosamente: ${loadedRoutes.length}`);
 });

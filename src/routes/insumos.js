@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /insumos:", err.message);
+        console.error("Error en GET /insumos:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de insumos",
@@ -43,7 +43,7 @@ router.get("/activos", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /insumos/activos:", err.message);
+        console.error("Error en GET /insumos/activos:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de insumos activos",
@@ -79,7 +79,7 @@ router.get("/:insumoID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /insumos/${req.params.insumoID}:`, err.message);
+        console.error(`Error en GET /insumos/${req.params.insumoID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta del insumo",
@@ -129,7 +129,7 @@ router.post("/", async (req, res) => {
         });
 
     } catch (err) {
-        console.error("❌ Error en POST /insumos:", err.message);
+        console.error("Error en POST /insumos:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear el insumo",
@@ -182,7 +182,7 @@ router.put("/:insumoID", async (req, res) => {
         });
 
     } catch (err) {
-        console.error(`❌ Error en PUT /insumos/${req.params.insumoID}:`, err.message);
+        console.error(`Error en PUT /insumos/${req.params.insumoID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
@@ -243,7 +243,7 @@ router.patch("/:insumoID/stock", async (req, res) => {
         });
 
     } catch (err) {
-        console.error(`❌ Error en PATCH /insumos/${req.params.insumoID}/stock:`, err.message);
+        console.error(`Error en PATCH /insumos/${req.params.insumoID}/stock:`, err.message);
         if (err.message.includes('no existe') || err.message.includes('No hay suficiente stock')) {
             return res.status(400).json({
                 estado: false,
@@ -282,7 +282,7 @@ router.delete("/:insumoID", async (req, res) => {
         });
 
     } catch (err) {
-        console.error(`❌ Error en DELETE /insumos/${req.params.insumoID}:`, err.message);
+        console.error(`Error en DELETE /insumos/${req.params.insumoID}:`, err.message);
         if (err.message.includes('no existe') || err.message.includes('pedidos asociados')) {
             return res.status(400).json({
                 estado: false,

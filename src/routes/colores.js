@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /colores:", err.message);
+        console.error("Error en GET /colores:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de colores",
@@ -44,7 +44,7 @@ router.get("/:colorID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /colores/${req.params.colorID}:`, err.message);
+        console.error(`Error en GET /colores/${req.params.colorID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta del color",
@@ -59,24 +59,24 @@ router.get("/:colorID", async (req, res) => {
 // =================== CREAR =================== //
 router.post("/", async (req, res) => {
     try {
-        const { Nombre } = req.body; // ❌ ELIMINAR: ColorID
+        const { Nombre } = req.body; 
 
         if (!Nombre) {
             return res.status(400).json({
                 estado: false,
                 mensaje: "Nombre es requerido",
-                camposRequeridos: ["Nombre"] // ⚠ CAMBIAR: solo Nombre y quitar el ID
+                camposRequeridos: ["Nombre"] 
             });
         }
 
-        if (Nombre.length > 30) { // ❌ ELIMINAR: validación de ColorID
+        if (Nombre.length > 30) { // ELIMINAR: validación de ColorID
             return res.status(400).json({
                 estado: false,
                 mensaje: "Nombre máximo 30 caracteres"
             });
         }
 
-        const nuevoColor = await createColor({ Nombre }); // ❌ ELIMINAR: ColorID
+        const nuevoColor = await createColor({ Nombre }); // ELIMINAR: ColorID
 
         res.status(201).json({
             estado: true,
@@ -86,8 +86,8 @@ router.post("/", async (req, res) => {
         });
 
     } catch (err) {
-        console.error("❌ Error en POST /colores:", err.message);
-        // ❌ ELIMINAR: verificación de 'Ya existe'
+        console.error(" Error en POST /colores:", err.message);
+        //  ELIMINAR: verificación de 'Ya existe'
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear el color",
@@ -123,7 +123,7 @@ router.put("/:colorID", async (req, res) => {
         });
 
     } catch (err) {
-        console.error(`❌ Error en PUT /colores/${req.params.colorID}:`, err.message);
+        console.error(`Error en PUT /colores/${req.params.colorID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
@@ -153,7 +153,7 @@ router.delete("/:colorID", async (req, res) => {
         });
 
     } catch (err) {
-        console.error(`❌ Error en DELETE /colores/${req.params.colorID}:`, err.message);
+        console.error(`Error en DELETE /colores/${req.params.colorID}:`, err.message);
         if (err.message.includes('no existe') || err.message.includes('productos variantes')) {
             return res.status(400).json({
                 estado: false,

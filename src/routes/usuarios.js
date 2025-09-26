@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /usuarios:", err.message);
+        console.error("Error en GET /usuarios:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de usuarios",
@@ -63,7 +63,7 @@ router.get("/:documentoID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /usuarios/${req.params.documentoID}:`, err.message);
+        console.error(`Error en GET /usuarios/${req.params.documentoID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta del usuario",
@@ -85,7 +85,7 @@ router.get("/util/roles", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /usuarios/util/roles:", err.message);
+        console.error("Error en GET /usuarios/util/roles:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al obtener roles",
@@ -153,7 +153,7 @@ router.post("/", async (req, res) => {
         });
 
     } catch (err) {
-        console.error("❌ Error en POST /usuarios:", err.message);
+        console.error("Error en POST /usuarios:", err.message);
         
         // Manejar errores específicos
         if (err.message.includes('ya existe') || err.message.includes('El rol especificado')) {
@@ -216,7 +216,7 @@ router.put("/:documentoID", async (req, res) => {
         });
 
     } catch (err) {
-        console.error(`❌ Error en PUT /usuarios/${req.params.documentoID}:`, err.message);
+        console.error(`Error en PUT /usuarios/${req.params.documentoID}:`, err.message);
         
         if (err.message.includes('no existe') || err.message.includes('ya existe')) {
             return res.status(400).json({
@@ -257,7 +257,7 @@ router.patch("/:documentoID", async (req, res) => {
         });
 
     } catch (err) {
-        console.error(`❌ Error en PATCH /usuarios/${req.params.documentoID}:`, err.message);
+        console.error(`Error en PATCH /usuarios/${req.params.documentoID}:`, err.message);
         
         if (err.message.includes('no existe') || err.message.includes('ya existe')) {
             return res.status(400).json({
@@ -300,7 +300,7 @@ router.delete("/:documentoID", async (req, res) => {
         });
 
     } catch (err) {
-        console.error(`❌ Error en DELETE /usuarios/${req.params.documentoID}:`, err.message);
+        console.error(`Error en DELETE /usuarios/${req.params.documentoID}:`, err.message);
         
         if (err.message.includes('no existe') || err.message.includes('tiene cotizaciones')) {
             return res.status(400).json({

@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /roles:", err.message);
+        console.error("Error en GET /roles:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de roles",
@@ -43,7 +43,7 @@ router.get("/activos", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /roles/activos:", err.message);
+        console.error("Error en GET /roles/activos:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de roles activos",
@@ -71,7 +71,7 @@ router.get("/:rolID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /roles/${req.params.rolID}:`, err.message);
+        console.error(`Error en GET /roles/${req.params.rolID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta del rol",
@@ -106,7 +106,7 @@ router.post("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en POST /roles:", err.message);
+        console.error("Error en POST /roles:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear el rol",
@@ -132,7 +132,7 @@ router.put("/:rolID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en PUT /roles/${req.params.rolID}:`, err.message);
+        console.error(`Error en PUT /roles/${req.params.rolID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
@@ -162,7 +162,7 @@ router.patch("/:rolID/estado", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en PATCH /roles/${req.params.rolID}/estado:`, err.message);
+        console.error(`Error en PATCH /roles/${req.params.rolID}/estado:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al cambiar el estado del rol",
@@ -185,7 +185,7 @@ router.delete("/:rolID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en DELETE /roles/${req.params.rolID}:`, err.message);
+        console.error(`Error en DELETE /roles/${req.params.rolID}:`, err.message);
         if (err.message.includes('no existe') || err.message.includes('usuarios asociados')) {
             return res.status(400).json({
                 estado: false,

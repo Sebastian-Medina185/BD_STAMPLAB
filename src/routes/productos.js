@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en GET /productos:", err.message);
+        console.error("Error en GET /productos:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta de productos",
@@ -42,7 +42,7 @@ router.get("/:productoID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en GET /productos/${req.params.productoID}:`, err.message);
+        console.error(`Error en GET /productos/${req.params.productoID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error en la consulta del producto",
@@ -76,7 +76,7 @@ router.post("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("❌ Error en POST /productos:", err.message);
+        console.error("Error en POST /productos:", err.message);
         if (err.message.includes('No existe ninguna tela')) {
             return res.status(400).json({
                 estado: false,
@@ -117,7 +117,7 @@ router.put("/:productoID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en PUT /productos/${req.params.productoID}:`, err.message);
+        console.error(`Error en PUT /productos/${req.params.productoID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
@@ -145,7 +145,7 @@ router.delete("/:productoID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(`❌ Error en DELETE /productos/${req.params.productoID}:`, err.message);
+        console.error(`Error en DELETE /productos/${req.params.productoID}:`, err.message);
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
