@@ -1,5 +1,5 @@
 // src/models/tecnicas.js
-const { sql, poolPromise } = require("../../db");
+const { sql, poolPromise } = require("../db");
 
 async function getTecnicas() {
     const pool = await poolPromise;

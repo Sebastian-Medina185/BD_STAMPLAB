@@ -1,7 +1,7 @@
 // =================================
 // src/models/telas.js - ACTUALIZADO CON PATRÓN COLORES
 // =================================
-const { sql, poolPromise } = require("../../db");
+const { sql, poolPromise } = require("../db");
 
 async function getTelas() {
     const pool = await poolPromise;

@@ -1,5 +1,5 @@
 // models/pedidos.js
-const { sql, poolPromise } = require("../../db");
+const { sql, poolPromise } = require("../db");
 
 async function getPedidos() {
     const pool = await poolPromise;

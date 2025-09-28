@@ -1,5 +1,5 @@
 // src/models/colores.js
-const { sql, poolPromise } = require("../../db");
+const { sql, poolPromise } = require("../db");
 
 // =================== LISTAR ===================
 async function getColores() {
