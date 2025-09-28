@@ -1,5 +1,5 @@
 // models/detalleDiseno.js
-const { sql, poolPromise } = require("../../db");
+const { sql, poolPromise } = require("../db");
 
 async function getDetalleDiseno() {
     const pool = await poolPromise;

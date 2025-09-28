@@ -2,7 +2,7 @@
 // MODELO DE INSUMOS ACTUALIZADO (AUTOINCREMENTAL)
 // ===============================================
 // src/models/insumos.js
-const { sql, poolPromise } = require("../../db");
+const { sql, poolPromise } = require("../db");
 
 // =================== LISTAR ===================
 async function getInsumos() {

@@ -1,5 +1,5 @@
 // src/models/proveedores.js
-const { sql, poolPromise } = require("../../db");
+const { sql, poolPromise } = require("../db");
 
 // =================== LISTAR ===================
 async function getProveedores() {

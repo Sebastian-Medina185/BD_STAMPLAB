@@ -1,5 +1,5 @@
 // models/cotizaciones.js
-const { sql, poolPromise } = require("../../db");
+const { sql, poolPromise } = require("../db");
 
 async function getCotizaciones() {
     const pool = await poolPromise;

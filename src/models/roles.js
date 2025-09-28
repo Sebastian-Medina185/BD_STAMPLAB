@@ -1,5 +1,5 @@
 // src/models/roles.js
-const { sql, poolPromise } = require("../../db");
+const { sql, poolPromise } = require("../db");
 
 // =================== LISTAR ===================
 async function getRoles() {

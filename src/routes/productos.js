@@ -1,163 +1,179 @@
-// src/routes/productos.js
 const express = require("express");
 const router = express.Router();
-const { getProductos, getProductoById, createProducto, updateProducto, deleteProducto } = require("../models/productos");
 
-router.get("/", async (req, res) => {
-    try {
-        const productos = await getProductos();
-        res.json({
-            estado: true,
-            mensaje: "Productos obtenidos exitosamente",
-            datos: productos,
-            cantidad: productos.length,
-            timestamp: new Date().toISOString()
-        });
-    } catch (err) {
-        console.error("Error en GET /productos:", err.message);
-        res.status(500).json({
-            estado: false,
-            mensaje: "Error en la consulta de productos",
-            error: err.message
-        });
-    }
-});
+// Importamos funciones del modelo de productos
+const {
+  createProducto,
+  getProductos,
+  getProductoById,
+  getProductoConVariantes,
+  updateProducto,
+  deleteProducto,
+} = require("../models/productos");
 
-router.get("/:productoID", async (req, res) => {
-    try {
-        const productoID = parseInt(req.params.productoID);
-        const producto = await getProductoById(productoID);
-
-        if (!producto) {
-            return res.status(404).json({
-                estado: false,
-                mensaje: `Producto con ID ${productoID} no encontrado`
-            });
-        }
-
-        res.json({
-            estado: true,
-            mensaje: "Producto encontrado exitosamente",
-            datos: producto,
-            timestamp: new Date().toISOString()
-        });
-    } catch (err) {
-        console.error(`Error en GET /productos/${req.params.productoID}:`, err.message);
-        res.status(500).json({
-            estado: false,
-            mensaje: "Error en la consulta del producto",
-            error: err.message
-        });
-    }
-});
-
+/**
+ * 📌 POST /api/productos
+ * Crear un nuevo producto
+ */
 router.post("/", async (req, res) => {
-    try {
-        const { Nombre, Descripcion, TelaID } = req.body;
+  try {
+    const { Nombre, Descripcion, TelaID } = req.body;
 
-        if (!Nombre || !TelaID) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: "Nombre y TelaID son requeridos",
-                camposRequeridos: ["Nombre", "TelaID"]
-            });
-        }
-
-        const nuevoProducto = await createProducto({
-            Nombre,
-            Descripcion,
-            TelaID
-        });
-
-        res.status(201).json({
-            estado: true,
-            mensaje: "Producto creado exitosamente",
-            datos: nuevoProducto,
-            timestamp: new Date().toISOString()
-        });
-    } catch (err) {
-        console.error("Error en POST /productos:", err.message);
-        if (err.message.includes('No existe ninguna tela')) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: err.message,
-                tipo: "error_validacion"
-            });
-        }
-        res.status(500).json({
-            estado: false,
-            mensaje: "Error al crear el producto",
-            error: err.message
-        });
+    if (!Nombre || !Descripcion || !TelaID) {
+      return res.status(400).json({
+        estado: false,
+        mensaje: "Todos los campos son obligatorios",
+      });
     }
+
+    const nuevoProducto = await createProducto({ Nombre, Descripcion, TelaID });
+    res.status(201).json({
+      estado: true,
+      mensaje: "✅ Producto creado correctamente",
+      datos: nuevoProducto,
+    });
+  } catch (error) {
+    res.status(500).json({
+      estado: false,
+      mensaje: "❌ Error al crear el producto",
+      error: error.message,
+    });
+  }
 });
 
+/**
+ * 📌 GET /api/productos
+ * Obtener todos los productos
+ */
+router.get("/", async (req, res) => {
+  try {
+    const productos = await getProductos();
+    res.json({
+      estado: true,
+      mensaje: "✅ Lista de productos obtenida correctamente",
+      datos: productos,
+    });
+  } catch (error) {
+    res.status(500).json({
+      estado: false,
+      mensaje: "❌ Error al obtener los productos",
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * 📌 GET /api/productos/:productoID
+ * Obtener un producto por su ID
+ */
+router.get("/:productoID", async (req, res) => {
+  try {
+    const productoID = parseInt(req.params.productoID);
+
+    const producto = await getProductoById(productoID);
+    if (!producto) {
+      return res.status(404).json({
+        estado: false,
+        mensaje: "❌ Producto no encontrado",
+      });
+    }
+
+    res.json({
+      estado: true,
+      mensaje: "✅ Producto obtenido correctamente",
+      datos: producto,
+    });
+  } catch (error) {
+    res.status(500).json({
+      estado: false,
+      mensaje: "❌ Error al obtener el producto",
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * 📌 GET /api/productos/:productoID/detalle
+ * Obtener un producto con sus variantes (maestro-detalle)
+ */
+router.get("/:productoID/detalle", async (req, res) => {
+  try {
+    const productoID = parseInt(req.params.productoID);
+
+    const producto = await getProductoConVariantes(productoID);
+    if (!producto) {
+      return res.status(404).json({
+        estado: false,
+        mensaje: "❌ Producto no encontrado",
+      });
+    }
+
+    res.json({
+      estado: true,
+      mensaje: "✅ Producto con variantes obtenido correctamente",
+      datos: producto,
+    });
+  } catch (error) {
+    res.status(500).json({
+      estado: false,
+      mensaje: "❌ Error al obtener el detalle del producto",
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * 📌 PUT /api/productos/:productoID
+ * Actualizar un producto existente
+ */
 router.put("/:productoID", async (req, res) => {
-    try {
-        const productoID = parseInt(req.params.productoID);
-        const { Nombre, Descripcion, TelaID } = req.body;
+  try {
+    const productoID = parseInt(req.params.productoID);
+    const { Nombre, Descripcion, TelaID } = req.body;
 
-        if (!Nombre || !TelaID) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: "Nombre y TelaID son requeridos"
-            });
-        }
-
-        const productoActualizado = await updateProducto(productoID, { 
-            Nombre, 
-            Descripcion, 
-            TelaID 
-        });
-
-        res.json({
-            estado: true,
-            mensaje: "Producto actualizado exitosamente",
-            datos: productoActualizado,
-            timestamp: new Date().toISOString()
-        });
-    } catch (err) {
-        console.error(`Error en PUT /productos/${req.params.productoID}:`, err.message);
-        if (err.message.includes('no existe')) {
-            return res.status(404).json({
-                estado: false,
-                mensaje: err.message
-            });
-        }
-        res.status(500).json({
-            estado: false,
-            mensaje: "Error al actualizar el producto",
-            error: err.message
-        });
+    if (!Nombre || !Descripcion || !TelaID) {
+      return res.status(400).json({
+        estado: false,
+        mensaje: "Todos los campos son obligatorios",
+      });
     }
+
+    await updateProducto(productoID, { Nombre, Descripcion, TelaID });
+
+    res.json({
+      estado: true,
+      mensaje: "✅ Producto actualizado correctamente",
+    });
+  } catch (error) {
+    res.status(500).json({
+      estado: false,
+      mensaje: "❌ Error al actualizar el producto",
+      error: error.message,
+    });
+  }
 });
 
+/**
+ * 📌 DELETE /api/productos/:productoID
+ * Eliminar un producto
+ */
 router.delete("/:productoID", async (req, res) => {
-    try {
-        const productoID = parseInt(req.params.productoID);
-        const resultado = await deleteProducto(productoID);
+  try {
+    const productoID = parseInt(req.params.productoID);
 
-        res.json({
-            estado: true,
-            mensaje: "Producto eliminado exitosamente",
-            datosEliminados: resultado.producto,
-            filasAfectadas: resultado.rowsAffected,
-            timestamp: new Date().toISOString()
-        });
-    } catch (err) {
-        console.error(`Error en DELETE /productos/${req.params.productoID}:`, err.message);
-        if (err.message.includes('no existe')) {
-            return res.status(404).json({
-                estado: false,
-                mensaje: err.message
-            });
-        }
-        res.status(500).json({
-            estado: false,
-            mensaje: "Error al eliminar el producto",
-            error: err.message
-        });
-    }
+    await deleteProducto(productoID);
+
+    res.json({
+      estado: true,
+      mensaje: "✅ Producto eliminado correctamente",
+    });
+  } catch (error) {
+    res.status(500).json({
+      estado: false,
+      mensaje: "❌ Error al eliminar el producto",
+      error: error.message,
+    });
+  }
 });
 
 module.exports = router;

@@ -1,111 +1,106 @@
-// src/models/productos.js
-const { sql, poolPromise } = require("../../db");
+const { poolPromise, sql } = require("../db");
 
+// 📌 Crear producto
+async function createProducto({ Nombre, Descripcion, TelaID }) {
+    const pool = await poolPromise;
+    if (!pool) throw new Error("No hay conexión disponible a la base de datos");
+
+    const result = await pool.request()
+        .input("Nombre", sql.VarChar(50), Nombre)
+        .input("Descripcion", sql.VarChar(200), Descripcion)
+        .input("TelaID", sql.Int, TelaID)
+        .query(`
+            INSERT INTO dbo.Productos (Nombre, Descripcion, TelaID)
+            VALUES (@Nombre, @Descripcion, @TelaID);
+            SELECT SCOPE_IDENTITY() AS ProductoID;
+        `);
+
+    return result.recordset[0];
+}
+
+// 📌 Obtener todos los productos
 async function getProductos() {
     const pool = await poolPromise;
-    if (!pool) throw new Error('No hay conexión disponible a la base de datos');
-    
+    if (!pool) throw new Error("No hay conexión disponible a la base de datos");
+
     const result = await pool.request().query(`
-        SELECT ProductoID, Nombre, Descripcion, TelaID 
-        FROM dbo.Productos 
-        ORDER BY ProductoID
+        SELECT p.ProductoID, p.Nombre, p.Descripcion, t.Nombre AS Tela
+        FROM dbo.Productos p
+        INNER JOIN dbo.Telas t ON p.TelaID = t.TelaID
     `);
+
     return result.recordset;
 }
 
+// 📌 Obtener producto por ID
 async function getProductoById(productoID) {
     const pool = await poolPromise;
-    if (!pool) throw new Error('No hay conexión disponible a la base de datos');
-    
+    if (!pool) throw new Error("No hay conexión disponible a la base de datos");
+
     const result = await pool.request()
         .input("productoID", sql.Int, productoID)
-        .query("SELECT ProductoID, Nombre, Descripcion, TelaID FROM dbo.Productos WHERE ProductoID = @productoID");
-    
-    return result.recordset[0];
-}
-
-async function createProducto(producto) {
-    const pool = await poolPromise;
-    if (!pool) throw new Error('No hay conexión disponible a la base de datos');
-
-    // Verificar si existe la tela
-    const telaExists = await pool.request()
-        .input("telaID", sql.Int, producto.TelaID)
-        .query("SELECT COUNT(*) as count FROM dbo.Telas WHERE TelaID = @telaID");
-
-    if (telaExists.recordset[0].count === 0) {
-        throw new Error(`No existe ninguna tela con el ID ${producto.TelaID}`);
-    }
-
-    const result = await pool.request()
-        .input("nombre", sql.VarChar(15), producto.Nombre)
-        .input("descripcion", sql.VarChar(200), producto.Descripcion)
-        .input("telaID", sql.Int, producto.TelaID)
         .query(`
-            INSERT INTO dbo.Productos (Nombre, Descripcion, TelaID)
-            VALUES (@nombre, @descripcion, @telaID);
-            SELECT * FROM dbo.Productos WHERE ProductoID = SCOPE_IDENTITY();
+            SELECT ProductoID, Nombre, Descripcion, TelaID
+            FROM dbo.Productos WHERE ProductoID = @productoID
         `);
-    
+
     return result.recordset[0];
 }
 
-async function updateProducto(productoID, producto) {
+// 📌 NUEVO: Obtener producto con variantes asociadas (maestro-detalle)
+async function getProductoConVariantes(productoID) {
     const pool = await poolPromise;
-    if (!pool) throw new Error('No hay conexión disponible a la base de datos');
+    if (!pool) throw new Error("No hay conexión disponible a la base de datos");
 
-    const exists = await pool.request()
-        .input("productoID", sql.Int, productoID)
-        .query("SELECT COUNT(*) as count FROM dbo.Productos WHERE ProductoID = @productoID");
-    
-    if (exists.recordset[0].count === 0) {
-        throw new Error('El producto no existe');
-    }
+    const producto = await getProductoById(productoID);
+    if (!producto) return null;
 
-    const result = await pool.request()
+    const variantes = await pool.request()
         .input("productoID", sql.Int, productoID)
-        .input("nombre", sql.VarChar(15), producto.Nombre)
-        .input("descripcion", sql.VarChar(200), producto.Descripcion)
-        .input("telaID", sql.Int, producto.TelaID)
         .query(`
-            UPDATE dbo.Productos 
-            SET Nombre = @nombre, 
-                Descripcion = @descripcion, 
-                TelaID = @telaID
-            WHERE ProductoID = @productoID;
-            SELECT * FROM dbo.Productos WHERE ProductoID = @productoID;
+            SELECT pv.VarianteID, pv.ProductoID, c.Nombre AS Color, t.Nombre AS Talla, 
+                   pv.Stock, pv.Imagen, pv.Precio, pv.Estado
+            FROM dbo.ProductosVariantes pv
+            INNER JOIN dbo.Colores c ON pv.ColorID = c.ColorID
+            INNER JOIN dbo.Tallas t ON pv.TallaID = t.TallaID
+            WHERE pv.ProductoID = @productoID
         `);
-    
-    return result.recordset[0];
+
+    return { ...producto, Variantes: variantes.recordset };
 }
 
+// 📌 Actualizar producto
+async function updateProducto(productoID, { Nombre, Descripcion, TelaID }) {
+    const pool = await poolPromise;
+    if (!pool) throw new Error("No hay conexión disponible a la base de datos");
+
+    await pool.request()
+        .input("productoID", sql.Int, productoID)
+        .input("Nombre", sql.VarChar(50), Nombre)
+        .input("Descripcion", sql.VarChar(200), Descripcion)
+        .input("TelaID", sql.Int, TelaID)
+        .query(`
+            UPDATE dbo.Productos
+            SET Nombre = @Nombre, Descripcion = @Descripcion, TelaID = @TelaID
+            WHERE ProductoID = @productoID
+        `);
+}
+
+// 📌 Eliminar producto
 async function deleteProducto(productoID) {
     const pool = await poolPromise;
-    if (!pool) throw new Error('No hay conexión disponible a la base de datos');
+    if (!pool) throw new Error("No hay conexión disponible a la base de datos");
 
-    const exists = await pool.request()
+    await pool.request()
         .input("productoID", sql.Int, productoID)
-        .query("SELECT * FROM dbo.Productos WHERE ProductoID = @productoID");
-    
-    if (exists.recordset.length === 0) {
-        throw new Error('El producto no existe');
-    }
-
-    const result = await pool.request()
-        .input("productoID", sql.Int, productoID)
-        .query("DELETE FROM dbo.Productos WHERE ProductoID = @productoID");
-    
-    return { 
-        deleted: true, 
-        producto: exists.recordset[0],
-        rowsAffected: result.rowsAffected[0] 
-    };
+        .query(`DELETE FROM dbo.Productos WHERE ProductoID = @productoID`);
 }
 
-module.exports = { 
+module.exports = {
+    createProducto,
     getProductos,
     getProductoById,
-    createProducto,
+    getProductoConVariantes, // 👈 nuevo
     updateProducto,
     deleteProducto
 };

@@ -22,18 +22,18 @@ function safeRequire(routePath, routeName) {
         if (fs.existsSync(fullPath)) {
             const route = require(fullPath);
             if (typeof route === 'function') {
-                console.log(`Ruta cargada: ${routeName}`);
+                console.log(` Ruta cargada: ${routeName}`);
                 return route;
             } else {
-                console.log(`Ruta ${routeName} no exporta una función válida`);
+                console.log(`  Ruta ${routeName} no exporta una función válida`);
                 return null;
             }
         } else {
-            console.log(`Archivo no encontrado: ${fullPath}`);
+            console.log(`  Archivo no encontrado: ${fullPath}`);
             return null;
         }
     } catch (error) {
-        console.log(`Error cargando ruta ${routeName}:`, error.message);
+        console.log(` Error cargando ruta ${routeName}:`, error.message);
         return null;
     }
 }
@@ -96,7 +96,7 @@ app.get('/', (req, res) => {
 // Ruta para probar conexión a BD
 app.get('/test-db', async (req, res) => {
     try {
-        const { poolPromise } = require('./db');
+        const { poolPromise } = require('./src/db');
         const pool = await poolPromise;
         
         if (!pool) {
