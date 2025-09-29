@@ -2,7 +2,7 @@
   const router = express.Router();
   const db = require('../db'); // conexión a SQL Server
 
-  // ✅ Crear nueva variante
+  
   router.post('/', async (req, res) => {
     const { ProductoID, ColorID, TallaID, Stock, Imagen, Precio, Estado } = req.body;
 
@@ -26,14 +26,14 @@
           VALUES (@ProductoID, @ColorID, @TallaID, @Stock, @Imagen, @Precio, @Estado)
         `);
 
-      res.status(201).json({ message: '✅ Variante creada exitosamente.' });
+      res.status(201).json({ message: 'Variante creada exitosamente.' });
     } catch (error) {
       console.error(' Error al crear variante:', error);
       res.status(500).json({ message: 'Error del servidor.' });
     }
   });
 
-  // ✅ Obtener todas las variantes
+  
   router.get('/', async (req, res) => {
     try {
       const pool = await db.poolPromise;
@@ -56,12 +56,12 @@
 
       res.status(200).json(result.recordset);
     } catch (error) {
-      console.error('❌ Error al obtener variantes:', error);
+      console.error('Error al obtener variantes:', error);
       res.status(500).json({ message: 'Error del servidor.' });
     }
   });
 
-  // ✅ Obtener variantes por producto
+  // Obtener variantes por producto
   router.get('/producto/:ProductoID', async (req, res) => {
     const { ProductoID } = req.params;
 
@@ -82,7 +82,7 @@
     }
   });
 
-  // ✅ Actualizar variante
+  // Actualizar variante
   router.put('/:VarianteID', async (req, res) => {
     const { VarianteID } = req.params;
     const { ColorID, TallaID, Stock, Imagen, Precio, Estado } = req.body;
@@ -112,14 +112,14 @@
         return res.status(404).json({ message: 'Variante no encontrada.' });
       }
 
-      res.status(200).json({ message: '✅ Variante actualizada correctamente.' });
+      res.status(200).json({ message: 'Variante actualizada correctamente.' });
     } catch (error) {
       console.error(' Error al actualizar variante:', error);
       res.status(500).json({ message: 'Error del servidor.' });
     }
   });
 
-  // ✅ Eliminar variante
+  // Eliminar variante
   router.delete('/:VarianteID', async (req, res) => {
     const { VarianteID } = req.params;
 
@@ -133,7 +133,7 @@
         return res.status(404).json({ message: 'Variante no encontrada.' });
       }
 
-      res.status(200).json({ message: '✅ Variante eliminada correctamente.' });
+      res.status(200).json({ message: 'Variante eliminada correctamente.' });
     } catch (error) {
       console.error(' Error al eliminar variante:', error);
       res.status(500).json({ message: 'Error del servidor.' });

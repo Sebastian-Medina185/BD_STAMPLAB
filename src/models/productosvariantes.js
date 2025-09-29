@@ -1,11 +1,11 @@
-// ✅ Importaciones necesarias para definir el modelo
+// Importaciones necesarias para definir el modelo
 const { DataTypes } = require("sequelize");
 const db = require('../db.js');
 const Productos = require("./productos");
 const Tallas = require("./tallas");
 const Colores = require("./colores");
 
-// ✅ Definición del modelo productos_variantes
+// Definición del modelo productos_variantes
 const ProductosVariantes = db.define("productos_variantes", {
   id: {
     type: DataTypes.INTEGER,
@@ -53,7 +53,7 @@ const ProductosVariantes = db.define("productos_variantes", {
   timestamps: true
 });
 
-// 🔗 Relaciones entre tablas
+// Relaciones entre tablas
 ProductosVariantes.belongsTo(Productos, { foreignKey: "productoId", as: "producto" });
 ProductosVariantes.belongsTo(Tallas, { foreignKey: "tallaId", as: "talla" });
 ProductosVariantes.belongsTo(Colores, { foreignKey: "colorId", as: "color" });
