@@ -1,7 +1,26 @@
 // src/routes/tallas.js
 const express = require("express");
 const router = express.Router();
-const { getTallas, getTallaById, createTalla, updateTalla, deleteTalla } = require("../models/tallas");
+const {
+    getTallas,
+    getTallaById,
+    createTalla,
+    updateTalla,
+    deleteTalla
+} = require("../models/tallas");
+
+// =================== FUNCIONES DE VALIDACIÓN ===================
+function validarNombre(nombre) {
+    if (typeof nombre !== "string") return "El nombre debe ser texto";
+    const limpio = nombre.trim();
+
+    if (limpio.length === 0) return "El nombre no puede estar vacío o contener solo espacios";
+    if (limpio.length < 1) return "El nombre debe tener al menos 1 carácter";
+    if (limpio.length > 10) return "El nombre no puede tener más de 10 caracteres";
+    if (!/^[A-Za-z]+$/.test(limpio)) return "El nombre solo puede contener letras sin espacios ni caracteres especiales";
+
+    return null; // válido
+}
 
 // =================== LISTAR ===================
 router.get("/", async (req, res) => {
@@ -56,20 +75,9 @@ router.get("/:tallaID", async (req, res) => {
 router.post("/", async (req, res) => {
     try {
         const { Nombre } = req.body;
-
-        if (!Nombre) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: "Nombre es requerido",
-                camposRequeridos: ["Nombre"]
-            });
-        }
-
-        if (Nombre.length > 4) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: "Nombre máximo 4 caracteres"
-            });
+        const error = validarNombre(Nombre);
+        if (error) {
+            return res.status(400).json({ estado: false, mensaje: error });
         }
 
         const nuevaTalla = await createTalla({ Nombre });
@@ -82,10 +90,10 @@ router.post("/", async (req, res) => {
         });
     } catch (err) {
         console.error("Error en POST /tallas:", err.message);
-        res.status(500).json({
+        const status = err.message.includes("ya existe") ? 400 : 500;
+        res.status(status).json({
             estado: false,
-            mensaje: "Error al crear la talla",
-            error: err.message
+            mensaje: err.message
         });
     }
 });
@@ -96,11 +104,9 @@ router.put("/:tallaID", async (req, res) => {
         const tallaID = parseInt(req.params.tallaID);
         const { Nombre } = req.body;
 
-        if (!Nombre) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: "Nombre es requerido"
-            });
+        const error = validarNombre(Nombre);
+        if (error) {
+            return res.status(400).json({ estado: false, mensaje: error });
         }
 
         const tallaActualizada = await updateTalla(tallaID, { Nombre });
@@ -113,16 +119,10 @@ router.put("/:tallaID", async (req, res) => {
         });
     } catch (err) {
         console.error(`Error en PUT /tallas/${req.params.tallaID}:`, err.message);
-        if (err.message.includes('no existe')) {
-            return res.status(404).json({
-                estado: false,
-                mensaje: err.message
-            });
-        }
-        res.status(500).json({
+        const status = err.message.includes("no existe") || err.message.includes("ya existe") ? 400 : 500;
+        res.status(status).json({
             estado: false,
-            mensaje: "Error al actualizar la talla",
-            error: err.message
+            mensaje: err.message
         });
     }
 });
@@ -141,17 +141,10 @@ router.delete("/:tallaID", async (req, res) => {
         });
     } catch (err) {
         console.error(`Error en DELETE /tallas/${req.params.tallaID}:`, err.message);
-        if (err.message.includes('no existe') || err.message.includes('productos variantes')) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: err.message,
-                tipo: "error_validacion"
-            });
-        }
-        res.status(500).json({
+        const status = err.message.includes("no existe") || err.message.includes("productos variantes") ? 400 : 500;
+        res.status(status).json({
             estado: false,
-            mensaje: "Error al eliminar la talla",
-            error: err.message
+            mensaje: err.message
         });
     }
 });

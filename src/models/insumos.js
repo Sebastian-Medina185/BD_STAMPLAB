@@ -46,10 +46,54 @@ async function createInsumo(insumo) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
+    // Validar que el nombre no esté duplicado
+    const checkNombre = await pool.request()
+        .input("nombre", sql.VarChar(50), insumo.Nombre)
+        .query("SELECT COUNT(*) AS existe FROM dbo.Insumos WHERE LOWER(Nombre) = LOWER(@nombre)");
+
+    if (checkNombre.recordset[0].existe > 0) {
+        throw new Error(`El nombre "${insumo.Nombre}" ya existe.`);
+    }
+
+    // Validar que el nombre tenga al menos 4 caracteres
+    if (!insumo.Nombre || insumo.Nombre.trim().length < 4) {
+        throw new Error("El nombre debe tener al menos 4 caracteres.");
+    }
+
+    // Validar que no sea solo espacios
+    if (insumo.Nombre.trim().length === 0) {
+        throw new Error("El nombre no puede estar vacío o contener solo espacios.");
+    }
+
+    // Validar que no contenga solo caracteres especiales o números
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-_]+$/.test(insumo.Nombre)) {
+        throw new Error("El nombre solo puede contener letras, números, espacios, guiones y guiones bajos.");
+    }
+
+    // Validar que contenga al menos una letra
+    if (!/[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(insumo.Nombre)) {
+        throw new Error("El nombre debe contener al menos una letra.");
+    }
+
+    // Validar que el stock sea un número válido
+    const stockValue = insumo.Stock !== undefined ? insumo.Stock : 0;
+    
+    // Validar que Stock no sea una cadena vacía
+    if (insumo.Stock === "" || insumo.Stock === null) {
+        throw new Error("El stock debe ser un número entero válido, no puede estar vacío.");
+    }
+    
+    if (isNaN(stockValue) || stockValue < 0 || !Number.isInteger(Number(stockValue))) {
+        throw new Error("El stock debe ser un número entero mayor o igual a 0.");
+    }
+
+    // Si el stock es 0, el estado se pone como Inactivo automáticamente
+    const estadoFinal = stockValue === 0 ? 0 : (insumo.Estado !== undefined ? insumo.Estado : 1);
+
     const result = await pool.request()
         .input("nombre", sql.VarChar(50), insumo.Nombre)
-        .input("stock", sql.Int, insumo.Stock || 0)
-        .input("estado", sql.Bit, insumo.Estado !== undefined ? insumo.Estado : true)
+        .input("stock", sql.Int, stockValue)
+        .input("estado", sql.Bit, estadoFinal)
         .query(`
             INSERT INTO dbo.Insumos (Nombre, Stock, Estado)
             VALUES (@nombre, @stock, @estado);
@@ -64,13 +108,51 @@ async function updateInsumo(insumoID, insumo) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Verificar que el insumo existe
+    // Verificar que el insumo existas
     const insumoExists = await pool.request()
         .input("insumoID", sql.Int, insumoID)
-        .query("SELECT COUNT(*) as count FROM dbo.Insumos WHERE InsumoID = @insumoID");
+        .query("SELECT * FROM dbo.Insumos WHERE InsumoID = @insumoID");
     
-    if (insumoExists.recordset[0].count === 0) {
-        throw new Error('El insumo no existe');
+    if (insumoExists.recordset.length === 0) {
+        throw new Error(`El insumo con ID ${insumoID} no existe.`);
+    }
+
+    // Validar nombre duplicado (si se envía)
+    if (insumo.Nombre) {
+        const checkNombre = await pool.request()
+            .input("nombre", sql.VarChar(50), insumo.Nombre)
+            .input("insumoID", sql.Int, insumoID)
+            .query("SELECT COUNT(*) AS existe FROM dbo.Insumos WHERE LOWER(Nombre) = LOWER(@nombre) AND InsumoID <> @insumoID");
+
+        if (checkNombre.recordset[0].existe > 0) {
+            throw new Error(`El nombre "${insumo.Nombre}" ya está en uso.`);
+        }
+
+        // Validar que el nombre tenga al menos 2 caracteres
+        if (insumo.Nombre.trim().length < 2) {
+            throw new Error("El nombre debe tener al menos 2 caracteres.");
+        }
+
+        // Validar formato del nombre
+        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-_]+$/.test(insumo.Nombre)) {
+            throw new Error("El nombre solo puede contener letras, números, espacios, guiones y guiones bajos.");
+        }
+
+        if (!/[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(insumo.Nombre)) {
+            throw new Error("El nombre debe contener al menos una letra.");
+        }
+    }
+
+    // Validar stock
+    if (insumo.Stock !== undefined) {
+        // Validar que Stock no sea una cadena vacía
+        if (insumo.Stock === "" || insumo.Stock === null) {
+            throw new Error("El stock debe ser un número entero válido, no puede estar vacío.");
+        }
+        
+        if (isNaN(insumo.Stock) || insumo.Stock < 0 || !Number.isInteger(Number(insumo.Stock))) {
+            throw new Error("El stock debe ser un número entero mayor o igual a 0.");
+        }
     }
 
     // Construir la consulta de actualización dinámicamente
@@ -84,8 +166,15 @@ async function updateInsumo(insumoID, insumo) {
     if (insumo.Stock !== undefined) {
         updateFields.push("Stock = @stock");
         request.input("stock", sql.Int, insumo.Stock);
+        
+        // Si el stock es 0, el estado se pone como Inactivo automáticamente
+        if (insumo.Stock === 0) {
+            updateFields.push("Estado = @estado");
+            request.input("estado", sql.Bit, 0);
+        }
     }
-    if (insumo.Estado !== undefined) {
+    if (insumo.Estado !== undefined && insumo.Stock !== 0) {
+        // Solo actualizar estado manualmente si stock no es 0
         updateFields.push("Estado = @estado");
         request.input("estado", sql.Bit, insumo.Estado);
     }
@@ -109,7 +198,7 @@ async function deleteInsumo(insumoID) {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Verificar que el insumo existe
+    // / Verificar que el insumo existe
     const insumoExists = await pool.request()
         .input("insumoID", sql.Int, insumoID)
         .query("SELECT * FROM dbo.Insumos WHERE InsumoID = @insumoID");
@@ -118,7 +207,7 @@ async function deleteInsumo(insumoID) {
         throw new Error('El insumo no existe');
     }
 
-    // Verificar si tiene pedidos asociados
+    // / Verificar si tiene pedidos asociados
     const hasPedidos = await pool.request()
         .input("insumoID", sql.Int, insumoID)
         .query("SELECT COUNT(*) as count FROM dbo.DetallePedido WHERE InsumoID = @insumoID");
@@ -143,7 +232,7 @@ async function actualizarStock(insumoID, cantidadCambio, tipo = 'incremento') {
     const pool = await poolPromise;
     if (!pool) throw new Error('No hay conexión disponible a la base de datos');
 
-    // Obtener stock actual
+    // / Obtener stock actual
     const insumoActual = await pool.request()
         .input("insumoID", sql.Int, insumoID)
         .query("SELECT Stock FROM dbo.Insumos WHERE InsumoID = @insumoID");

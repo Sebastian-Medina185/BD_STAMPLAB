@@ -12,7 +12,7 @@ const {
 } = require("../models/productos");
 
 /**
- * 📌 POST /api/productos
+ * POST /api/productos
  * Crear un nuevo producto
  */
 router.post("/", async (req, res) => {
@@ -29,20 +29,20 @@ router.post("/", async (req, res) => {
     const nuevoProducto = await createProducto({ Nombre, Descripcion, TelaID });
     res.status(201).json({
       estado: true,
-      mensaje: "✅ Producto creado correctamente",
+      mensaje: "Producto creado correctamente",
       datos: nuevoProducto,
     });
   } catch (error) {
     res.status(500).json({
       estado: false,
-      mensaje: "❌ Error al crear el producto",
+      mensaje: "Error al crear el producto",
       error: error.message,
     });
   }
 });
 
 /**
- * 📌 GET /api/productos
+ * GET /api/productos
  * Obtener todos los productos
  */
 router.get("/", async (req, res) => {
@@ -50,20 +50,20 @@ router.get("/", async (req, res) => {
     const productos = await getProductos();
     res.json({
       estado: true,
-      mensaje: "✅ Lista de productos obtenida correctamente",
+      mensaje: "Lista de productos obtenida correctamente",
       datos: productos,
     });
   } catch (error) {
     res.status(500).json({
       estado: false,
-      mensaje: "❌ Error al obtener los productos",
+      mensaje: "Error al obtener los productos",
       error: error.message,
     });
   }
 });
 
 /**
- * 📌 GET /api/productos/:productoID
+ * GET /api/productos/:productoID
  * Obtener un producto por su ID
  */
 router.get("/:productoID", async (req, res) => {
@@ -74,26 +74,26 @@ router.get("/:productoID", async (req, res) => {
     if (!producto) {
       return res.status(404).json({
         estado: false,
-        mensaje: "❌ Producto no encontrado",
+        mensaje: "Producto no encontrado",
       });
     }
 
     res.json({
       estado: true,
-      mensaje: "✅ Producto obtenido correctamente",
+      mensaje: "Producto obtenido correctamente",
       datos: producto,
     });
   } catch (error) {
     res.status(500).json({
       estado: false,
-      mensaje: "❌ Error al obtener el producto",
+      mensaje: "Error al obtener el producto",
       error: error.message,
     });
   }
 });
 
 /**
- * 📌 GET /api/productos/:productoID/detalle
+ * GET /api/productos/:productoID/detalle
  * Obtener un producto con sus variantes (maestro-detalle)
  */
 router.get("/:productoID/detalle", async (req, res) => {
@@ -104,26 +104,26 @@ router.get("/:productoID/detalle", async (req, res) => {
     if (!producto) {
       return res.status(404).json({
         estado: false,
-        mensaje: "❌ Producto no encontrado",
+        mensaje: "Producto no encontrado",
       });
     }
 
     res.json({
       estado: true,
-      mensaje: "✅ Producto con variantes obtenido correctamente",
+      mensaje: "Producto con variantes obtenido correctamente",
       datos: producto,
     });
   } catch (error) {
     res.status(500).json({
       estado: false,
-      mensaje: "❌ Error al obtener el detalle del producto",
+      mensaje: "Error al obtener el detalle del producto",
       error: error.message,
     });
   }
 });
 
 /**
- * 📌 PUT /api/productos/:productoID
+ * PUT /api/productos/:productoID
  * Actualizar un producto existente
  */
 router.put("/:productoID", async (req, res) => {
@@ -142,19 +142,19 @@ router.put("/:productoID", async (req, res) => {
 
     res.json({
       estado: true,
-      mensaje: "✅ Producto actualizado correctamente",
+      mensaje: "Producto actualizado correctamente",
     });
   } catch (error) {
     res.status(500).json({
       estado: false,
-      mensaje: "❌ Error al actualizar el producto",
+      mensaje: "Error al actualizar el producto",
       error: error.message,
     });
   }
 });
 
 /**
- * 📌 DELETE /api/productos/:productoID
+ * DELETE /api/productos/:productoID
  * Eliminar un producto
  */
 router.delete("/:productoID", async (req, res) => {
@@ -165,12 +165,12 @@ router.delete("/:productoID", async (req, res) => {
 
     res.json({
       estado: true,
-      mensaje: "✅ Producto eliminado correctamente",
+      mensaje: "Producto eliminado correctamente",
     });
   } catch (error) {
     res.status(500).json({
       estado: false,
-      mensaje: "❌ Error al eliminar el producto",
+      mensaje: "Error al eliminar el producto",
       error: error.message,
     });
   }

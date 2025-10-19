@@ -93,6 +93,7 @@ router.post("/", async (req, res) => {
     try {
         const { Nombre, Stock, Estado } = req.body;
 
+        // 🔍 Validación: Nombre es requerido
         if (!Nombre) {
             return res.status(400).json({
                 estado: false,
@@ -101,6 +102,15 @@ router.post("/", async (req, res) => {
             });
         }
 
+        // 🔍 Validación: Nombre debe tener al menos 4 caracteres
+        if (Nombre.trim().length < 4) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "El nombre debe tener al menos 4 caracteres"
+            });
+        }
+
+        // 🔍 Validación: Nombre máximo 50 caracteres
         if (Nombre.length > 50) {
             return res.status(400).json({
                 estado: false,
@@ -108,7 +118,16 @@ router.post("/", async (req, res) => {
             });
         }
 
-        if (Stock !== undefined && (Stock < 0 || !Number.isInteger(Stock))) {
+        // 🔍 Validación: Stock no puede estar vacío
+        if (Stock === "" || Stock === null) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "El stock debe ser un número entero válido, no puede estar vacío"
+            });
+        }
+
+        // 🔍 Validación: Stock debe ser entero mayor o igual a 0
+        if (Stock !== undefined && (Stock < 0 || !Number.isInteger(Number(Stock)))) {
             return res.status(400).json({
                 estado: false,
                 mensaje: "El stock debe ser un número entero mayor o igual a 0"
@@ -117,7 +136,7 @@ router.post("/", async (req, res) => {
 
         const nuevoInsumo = await createInsumo({ 
             Nombre, 
-            Stock: Stock || 0, 
+            Stock: Stock !== undefined ? Stock : 0, 
             Estado: Estado !== undefined ? Estado : true 
         });
 
@@ -130,6 +149,19 @@ router.post("/", async (req, res) => {
 
     } catch (err) {
         console.error("Error en POST /insumos:", err.message);
+        
+        // Manejo específico de errores del modelo
+        if (err.message.includes('ya existe') || 
+            err.message.includes('al menos') || 
+            err.message.includes('solo puede contener') ||
+            err.message.includes('debe contener al menos una letra') ||
+            err.message.includes('no puede estar vacío')) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: err.message
+            });
+        }
+        
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear el insumo",
@@ -144,6 +176,7 @@ router.put("/:insumoID", async (req, res) => {
         const insumoID = parseInt(req.params.insumoID);
         const datosActualizacion = req.body;
 
+        // 🔍 Validación: ID debe ser un número válido
         if (isNaN(insumoID)) {
             return res.status(400).json({
                 estado: false,
@@ -151,6 +184,7 @@ router.put("/:insumoID", async (req, res) => {
             });
         }
 
+        // 🔍 Validación: Debe enviar al menos un campo
         if (Object.keys(datosActualizacion).length === 0) {
             return res.status(400).json({
                 estado: false,
@@ -158,6 +192,15 @@ router.put("/:insumoID", async (req, res) => {
             });
         }
 
+        // 🔍 Validación: Nombre debe tener al menos 2 caracteres
+        if (datosActualizacion.Nombre && datosActualizacion.Nombre.trim().length < 2) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "El nombre debe tener al menos 2 caracteres"
+            });
+        }
+
+        // 🔍 Validación: Nombre máximo 50 caracteres
         if (datosActualizacion.Nombre && datosActualizacion.Nombre.length > 50) {
             return res.status(400).json({
                 estado: false,
@@ -165,7 +208,16 @@ router.put("/:insumoID", async (req, res) => {
             });
         }
 
-        if (datosActualizacion.Stock !== undefined && (datosActualizacion.Stock < 0 || !Number.isInteger(datosActualizacion.Stock))) {
+        // 🔍 Validación: Stock no puede estar vacío
+        if (datosActualizacion.Stock === "" || datosActualizacion.Stock === null) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: "El stock debe ser un número entero válido, no puede estar vacío"
+            });
+        }
+
+        // 🔍 Validación: Stock debe ser entero mayor o igual a 0
+        if (datosActualizacion.Stock !== undefined && (datosActualizacion.Stock < 0 || !Number.isInteger(Number(datosActualizacion.Stock)))) {
             return res.status(400).json({
                 estado: false,
                 mensaje: "El stock debe ser un número entero mayor o igual a 0"
@@ -183,12 +235,26 @@ router.put("/:insumoID", async (req, res) => {
 
     } catch (err) {
         console.error(`Error en PUT /insumos/${req.params.insumoID}:`, err.message);
+        
+        // Manejo específico de errores
         if (err.message.includes('no existe')) {
             return res.status(404).json({
                 estado: false,
                 mensaje: err.message
             });
         }
+        
+        if (err.message.includes('ya está en uso') || 
+            err.message.includes('al menos') ||
+            err.message.includes('solo puede contener') ||
+            err.message.includes('debe contener al menos una letra') ||
+            err.message.includes('no puede estar vacío')) {
+            return res.status(400).json({
+                estado: false,
+                mensaje: err.message
+            });
+        }
+        
         res.status(500).json({
             estado: false,
             mensaje: "Error al actualizar el insumo",
@@ -203,6 +269,7 @@ router.patch("/:insumoID/stock", async (req, res) => {
         const insumoID = parseInt(req.params.insumoID);
         const { cantidad, tipo } = req.body;
 
+        // 🔍 Validación: ID debe ser un número válido
         if (isNaN(insumoID)) {
             return res.status(400).json({
                 estado: false,
@@ -210,6 +277,7 @@ router.patch("/:insumoID/stock", async (req, res) => {
             });
         }
 
+        // 🔍 Validación: Cantidad y tipo son requeridos
         if (!cantidad || !tipo) {
             return res.status(400).json({
                 estado: false,
@@ -219,6 +287,7 @@ router.patch("/:insumoID/stock", async (req, res) => {
             });
         }
 
+        // 🔍 Validación: Cantidad debe ser un número entero positivo
         if (!Number.isInteger(cantidad) || cantidad <= 0) {
             return res.status(400).json({
                 estado: false,
@@ -226,6 +295,7 @@ router.patch("/:insumoID/stock", async (req, res) => {
             });
         }
 
+        // 🔍 Validación: Tipo debe ser 'incremento' o 'decremento'
         if (!['incremento', 'decremento'].includes(tipo)) {
             return res.status(400).json({
                 estado: false,
@@ -244,6 +314,7 @@ router.patch("/:insumoID/stock", async (req, res) => {
 
     } catch (err) {
         console.error(`Error en PATCH /insumos/${req.params.insumoID}/stock:`, err.message);
+        
         if (err.message.includes('no existe') || err.message.includes('No hay suficiente stock')) {
             return res.status(400).json({
                 estado: false,
@@ -251,6 +322,7 @@ router.patch("/:insumoID/stock", async (req, res) => {
                 tipo: "error_validacion"
             });
         }
+        
         res.status(500).json({
             estado: false,
             mensaje: "Error al actualizar el stock",
@@ -264,6 +336,7 @@ router.delete("/:insumoID", async (req, res) => {
     try {
         const insumoID = parseInt(req.params.insumoID);
 
+        // 🔍 Validación: ID debe ser un número válido
         if (isNaN(insumoID)) {
             return res.status(400).json({
                 estado: false,
@@ -283,6 +356,7 @@ router.delete("/:insumoID", async (req, res) => {
 
     } catch (err) {
         console.error(`Error en DELETE /insumos/${req.params.insumoID}:`, err.message);
+        
         if (err.message.includes('no existe') || err.message.includes('pedidos asociados')) {
             return res.status(400).json({
                 estado: false,
@@ -290,6 +364,7 @@ router.delete("/:insumoID", async (req, res) => {
                 tipo: "error_validacion"
             });
         }
+        
         res.status(500).json({
             estado: false,
             mensaje: "Error al eliminar el insumo",

@@ -100,7 +100,7 @@ module.exports = {
     createProducto,
     getProductos,
     getProductoById,
-    getProductoConVariantes, // 👈 nuevo
+    getProductoConVariantes, 
     updateProducto,
     deleteProducto
 };
