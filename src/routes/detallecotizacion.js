@@ -1,4 +1,4 @@
-// routes/detalleCotizacion.js
+// routes/detallecotizacion.js
 const express = require("express");
 const router = express.Router();
 const { 
@@ -9,6 +9,7 @@ const {
     deleteDetalleCotizacion 
 } = require("../models/detallecotizacion");
 
+// ✅ Obtener todos los detalles
 router.get("/", async (req, res) => {
     try {
         const detalles = await getDetalleCotizacion();
@@ -20,15 +21,16 @@ router.get("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(" Error en GET /detalleCotizacion:", err.message);
+        console.error(" Error en GET /detallecotizacion:", err.message);
         res.status(500).json({
             estado: false,
-            mensaje: "Error en la consulta de detalles de cotización",
+            mensaje: "Error al obtener los detalles de cotización",
             error: err.message
         });
     }
 });
 
+// ✅ Obtener un detalle por ID
 router.get("/:detalleID", async (req, res) => {
     try {
         const detalleID = parseInt(req.params.detalleID);
@@ -37,53 +39,42 @@ router.get("/:detalleID", async (req, res) => {
         if (!detalle) {
             return res.status(404).json({
                 estado: false,
-                mensaje: `Detalle de cotización con ID ${detalleID} no encontrado`
+                mensaje: `Detalle con ID ${detalleID} no encontrado`
             });
         }
 
         res.json({
             estado: true,
-            mensaje: "Detalle de cotización encontrado exitosamente",
+            mensaje: "Detalle encontrado exitosamente",
             datos: detalle,
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(` Error en GET /detalleCotizacion/${req.params.detalleID}:`, err.message);
+        console.error(` Error en GET /detallecotizacion/${req.params.detalleID}:`, err.message);
         res.status(500).json({
             estado: false,
-            mensaje: "Error en la consulta del detalle de cotización",
+            mensaje: "Error al obtener el detalle",
             error: err.message
         });
     }
 });
 
+// ✅ Crear un nuevo detalle
 router.post("/", async (req, res) => {
     try {
-        const { 
-            CotizacionID, 
-            ProductoID, 
-            TallaID, 
-            ColorID, 
-            TecnicaID, 
-            Cantidad,
-            PrendaDescripcion,
-            TraePrenda
-        } = req.body;
+        const { CotizacionID, VarianteID, Cantidad, PrendaDescripcion, TraePrenda } = req.body;
 
-        if (!CotizacionID || !ProductoID || !Cantidad) {
+        if (!CotizacionID || !Cantidad) {
             return res.status(400).json({
                 estado: false,
-                mensaje: "CotizacionID, ProductoID y Cantidad son requeridos",
-                camposRequeridos: ["CotizacionID", "ProductoID", "Cantidad"]
+                mensaje: "CotizacionID y Cantidad son requeridos",
+                camposRequeridos: ["CotizacionID", "Cantidad"]
             });
         }
 
         const nuevoDetalle = await createDetalleCotizacion({
             CotizacionID,
-            ProductoID,
-            TallaID,
-            ColorID,
-            TecnicaID,
+            VarianteID,
             Cantidad,
             PrendaDescripcion,
             TraePrenda: TraePrenda || false
@@ -96,14 +87,7 @@ router.post("/", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error("Error en POST /detalleCotizacion:", err.message);
-        if (err.message.includes('No existe')) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: err.message,
-                tipo: "error_validacion"
-            });
-        }
+        console.error(" Error en POST /detallecotizacion:", err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al crear el detalle de cotización",
@@ -112,34 +96,25 @@ router.post("/", async (req, res) => {
     }
 });
 
+// ✅ Actualizar un detalle existente
 router.put("/:detalleID", async (req, res) => {
     try {
         const detalleID = parseInt(req.params.detalleID);
-        const { 
-            CotizacionID, 
-            ProductoID, 
-            TallaID, 
-            ColorID, 
-            TecnicaID, 
-            Cantidad, 
-            PrecioUnitario 
-        } = req.body;
+        const { CotizacionID, VarianteID, Cantidad, PrendaDescripcion, TraePrenda } = req.body;
 
-        if (!CotizacionID || !ProductoID || !Cantidad || !PrecioUnitario) {
+        if (!CotizacionID || !Cantidad) {
             return res.status(400).json({
                 estado: false,
-                mensaje: "CotizacionID, ProductoID, Cantidad y PrecioUnitario son requeridos"
+                mensaje: "CotizacionID y Cantidad son requeridos"
             });
         }
 
         const detalleActualizado = await updateDetalleCotizacion(detalleID, {
             CotizacionID,
-            ProductoID,
-            TallaID,
-            ColorID,
-            TecnicaID,
+            VarianteID,
             Cantidad,
-            PrecioUnitario
+            PrendaDescripcion,
+            TraePrenda
         });
 
         res.json({
@@ -149,13 +124,7 @@ router.put("/:detalleID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(` Error en PUT /detalleCotizacion/${req.params.detalleID}:`, err.message);
-        if (err.message.includes('no existe')) {
-            return res.status(404).json({
-                estado: false,
-                mensaje: err.message
-            });
-        }
+        console.error(` Error en PUT /detallecotizacion/${req.params.detalleID}:`, err.message);
         res.status(500).json({
             estado: false,
             mensaje: "Error al actualizar el detalle de cotización",
@@ -164,6 +133,7 @@ router.put("/:detalleID", async (req, res) => {
     }
 });
 
+// ✅ Eliminar un detalle
 router.delete("/:detalleID", async (req, res) => {
     try {
         const detalleID = parseInt(req.params.detalleID);
@@ -177,16 +147,10 @@ router.delete("/:detalleID", async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (err) {
-        console.error(` Error en DELETE /detalleCotizacion/${req.params.detalleID}:`, err.message);
-        if (err.message.includes('no existe')) {
-            return res.status(404).json({
-                estado: false,
-                mensaje: err.message
-            });
-        }
+        console.error(` Error en DELETE /detallecotizacion/${req.params.detalleID}:`, err.message);
         res.status(500).json({
             estado: false,
-            mensaje: "Error al eliminar el detalle de cotización",
+            mensaje: "Error al eliminar el detalle",
             error: err.message
         });
     }

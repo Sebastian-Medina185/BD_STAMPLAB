@@ -3,7 +3,7 @@ const { sql, poolPromise } = require("../db");
 
 async function getDetalleDiseno() {
     const pool = await poolPromise;
-    const result = await pool.request().query("SELECT * FROM dbo.DetalleDiseno");
+    const result = await pool.request().query("SELECT * FROM dbo.DetalleDiseño");
     return result.recordset;
 }
 
