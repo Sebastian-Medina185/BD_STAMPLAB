@@ -1,15 +1,13 @@
-// src/routes/roles.js
 const express = require("express");
 const router = express.Router();
-const { 
-    getRoles, 
-    getRolesActivos,
-    getRolById, 
-    createRol, 
-    updateRol, 
-    deleteRol,
-    cambiarEstadoRol 
+const {
+    getRoles,
+    getRolById,
+    createRol,
+    updateRol,
+    deleteRol
 } = require("../models/roles");
+
 
 // =================== LISTAR ===================
 router.get("/", async (req, res) => {
@@ -17,64 +15,13 @@ router.get("/", async (req, res) => {
         const roles = await getRoles();
         res.json({
             estado: true,
-            mensaje: "Roles obtenidos exitosamente",
-            datos: roles,
-            cantidad: roles.length,
-            timestamp: new Date().toISOString()
+            mensaje: "Roles obtenidos correctamente.",
+            datos: roles
         });
     } catch (err) {
-        console.error("Error en GET /roles:", err.message);
         res.status(500).json({
             estado: false,
-            mensaje: "Error en la consulta de roles",
-            error: err.message
-        });
-    }
-});
-
-router.get("/activos", async (req, res) => {
-    try {
-        const roles = await getRolesActivos();
-        res.json({
-            estado: true,
-            mensaje: "Roles activos obtenidos exitosamente",
-            datos: roles,
-            cantidad: roles.length,
-            timestamp: new Date().toISOString()
-        });
-    } catch (err) {
-        console.error("Error en GET /roles/activos:", err.message);
-        res.status(500).json({
-            estado: false,
-            mensaje: "Error en la consulta de roles activos",
-            error: err.message
-        });
-    }
-});
-
-router.get("/:rolID", async (req, res) => {
-    try {
-        const rolID = parseInt(req.params.rolID);
-        const rol = await getRolById(rolID);
-
-        if (!rol) {
-            return res.status(404).json({
-                estado: false,
-                mensaje: `Rol con ID ${rolID} no encontrado`
-            });
-        }
-
-        res.json({
-            estado: true,
-            mensaje: "Rol encontrado exitosamente",
-            datos: rol,
-            timestamp: new Date().toISOString()
-        });
-    } catch (err) {
-        console.error(`Error en GET /roles/${req.params.rolID}:`, err.message);
-        res.status(500).json({
-            estado: false,
-            mensaje: "Error en la consulta del rol",
+            mensaje: "Error al listar los roles.",
             error: err.message
         });
     }
@@ -84,88 +31,36 @@ router.get("/:rolID", async (req, res) => {
 router.post("/", async (req, res) => {
     try {
         const { Nombre, Descripcion, Estado } = req.body;
-
-        if (!Nombre) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: "Nombre es requerido",
-                camposRequeridos: ["Nombre"]
-            });
-        }
-
-        const nuevoRol = await createRol({
-            Nombre,
-            Descripcion,
-            Estado: Estado !== undefined ? Estado : true
-        });
-
+        const nuevo = await createRol({ Nombre, Descripcion, Estado });
         res.status(201).json({
             estado: true,
-            mensaje: "Rol creado exitosamente",
-            datos: nuevoRol,
-            timestamp: new Date().toISOString()
+            mensaje: "Rol creado exitosamente.",
+            datos: nuevo
         });
     } catch (err) {
-        console.error("Error en POST /roles:", err.message);
-        res.status(500).json({
+        res.status(400).json({
             estado: false,
-            mensaje: "Error al crear el rol",
+            mensaje: "Error al crear el rol.",
             error: err.message
         });
     }
 });
-
-
 
 // =================== EDITAR ===================
 router.put("/:rolID", async (req, res) => {
     try {
         const rolID = parseInt(req.params.rolID);
         const { Nombre, Descripcion, Estado } = req.body;
-
-        const rolActualizado = await updateRol(rolID, { Nombre, Descripcion, Estado });
-
+        const actualizado = await updateRol(rolID, { Nombre, Descripcion, Estado });
         res.json({
             estado: true,
-            mensaje: "Rol actualizado exitosamente",
-            datos: rolActualizado,
-            timestamp: new Date().toISOString()
+            mensaje: "Rol actualizado exitosamente.",
+            datos: actualizado
         });
     } catch (err) {
-        console.error(`Error en PUT /roles/${req.params.rolID}:`, err.message);
-        if (err.message.includes('no existe')) {
-            return res.status(404).json({
-                estado: false,
-                mensaje: err.message
-            });
-        }
-        res.status(500).json({
+        res.status(400).json({
             estado: false,
-            mensaje: "Error al actualizar el rol",
-            error: err.message
-        });
-    }
-});
-
-// =================== CAMBIAR ESTADO ===================
-router.patch("/:rolID/estado", async (req, res) => {
-    try {
-        const rolID = parseInt(req.params.rolID);
-        const { Estado } = req.body;
-
-        const rolActualizado = await cambiarEstadoRol(rolID, Estado);
-
-        res.json({
-            estado: true,
-            mensaje: `Rol ${Estado ? 'activado' : 'desactivado'} exitosamente`,
-            datos: rolActualizado,
-            timestamp: new Date().toISOString()
-        });
-    } catch (err) {
-        console.error(`Error en PATCH /roles/${req.params.rolID}/estado:`, err.message);
-        res.status(500).json({
-            estado: false,
-            mensaje: "Error al cambiar el estado del rol",
+            mensaje: "Error al actualizar el rol.",
             error: err.message
         });
     }
@@ -175,27 +70,16 @@ router.patch("/:rolID/estado", async (req, res) => {
 router.delete("/:rolID", async (req, res) => {
     try {
         const rolID = parseInt(req.params.rolID);
-        const resultado = await deleteRol(rolID);
-
+        const eliminado = await deleteRol(rolID);
         res.json({
             estado: true,
-            mensaje: "Rol eliminado exitosamente",
-            datosEliminados: resultado.rol,
-            filasAfectadas: resultado.rowsAffected,
-            timestamp: new Date().toISOString()
+            mensaje: "Rol eliminado correctamente.",
+            datos: eliminado
         });
     } catch (err) {
-        console.error(`Error en DELETE /roles/${req.params.rolID}:`, err.message);
-        if (err.message.includes('no existe') || err.message.includes('usuarios asociados')) {
-            return res.status(400).json({
-                estado: false,
-                mensaje: err.message,
-                tipo: "error_validacion"
-            });
-        }
-        res.status(500).json({
+        res.status(400).json({
             estado: false,
-            mensaje: "Error al eliminar el rol",
+            mensaje: "Error al eliminar el rol.",
             error: err.message
         });
     }

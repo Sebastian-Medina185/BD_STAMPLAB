@@ -50,7 +50,7 @@ async function updateCotizacion(cotizacionID, cotizacion) {
         .input("cotizacionID", sql.Int, cotizacionID)
         .query("SELECT COUNT(*) as count FROM dbo.Cotizaciones WHERE CotizacionID = @cotizacionID");
     
-    if (exists.recordset[0].count === 0) {
+    if (exists.recordset[0].count === 0) {  
         throw new Error('La cotización no existe');
     }
 

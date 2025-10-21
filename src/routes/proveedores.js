@@ -1,4 +1,3 @@
-// src/routes/proveedores.js
 const express = require("express");
 const router = express.Router();
 const { getProveedores, getProveedorById, createProveedor, updateProveedor, deleteProveedor } = require("../models/proveedores");
@@ -24,27 +23,59 @@ router.get("/:nit", async (req, res) => {
     }
 });
 
-// CREAR
+// CREAR - CORREGIDO: Normalizar nombres de propiedades
 router.post("/", async (req, res) => {
     try {
-        const { Nit, Nombre, Correo, Telefono, Direccion, Estado } = req.body;
-        if (!Nit || !Nombre || !Correo || !Telefono || !Direccion || Estado === undefined) {
-            return res.status(400).json({ estado: false, mensaje: "Todos los campos son requeridos" });
+        // Normalizar propiedades a mayúsculas (como espera el modelo)
+        const proveedorData = {
+            Nit: req.body.nit || req.body.Nit,
+            Nombre: req.body.nombre || req.body.Nombre,
+            Correo: req.body.correo || req.body.Correo,
+            Telefono: req.body.telefono || req.body.Telefono,
+            Direccion: req.body.direccion || req.body.Direccion,
+            Estado: req.body.estado !== undefined ? req.body.estado : (req.body.Estado !== undefined ? req.body.Estado : true)
+        };
+
+        // Validar campos requeridos
+        if (!proveedorData.Nit || !proveedorData.Nombre || !proveedorData.Correo || !proveedorData.Telefono || !proveedorData.Direccion) {
+            return res.status(400).json({ 
+                estado: false, 
+                mensaje: "Todos los campos son requeridos" 
+            });
         }
-        const nuevo = await createProveedor({ Nit, Nombre, Correo, Telefono, Direccion, Estado });
-        res.status(201).json({ estado: true, mensaje: "Proveedor creado", datos: nuevo });
+
+        const nuevo = await createProveedor(proveedorData);
+        res.status(201).json({ estado: true, mensaje: "Proveedor creado exitosamente", datos: nuevo });
     } catch (err) {
-        res.status(500).json({ estado: false, mensaje: "Error creando proveedor", error: err.message });
+        const statusCode = err.statusCode || 500;
+        res.status(statusCode).json({ 
+            estado: false, 
+            mensaje: err.message || "Error creando proveedor"
+        });
     }
 });
 
-// EDITAR
+// EDITAR - CORREGIDO: Normalizar nombres de propiedades
 router.put("/:nit", async (req, res) => {
     try {
-        const actualizado = await updateProveedor(req.params.nit, req.body);
-        res.json({ estado: true, mensaje: "Proveedor actualizado", datos: actualizado });
+        // Normalizar propiedades a mayúsculas
+        const proveedorData = {
+            Nit: req.body.nit || req.body.Nit,
+            Nombre: req.body.nombre || req.body.Nombre,
+            Correo: req.body.correo || req.body.Correo,
+            Telefono: req.body.telefono || req.body.Telefono,
+            Direccion: req.body.direccion || req.body.Direccion,
+            Estado: req.body.estado !== undefined ? req.body.estado : req.body.Estado
+        };
+
+        const actualizado = await updateProveedor(req.params.nit, proveedorData);
+        res.json({ estado: true, mensaje: "Proveedor actualizado exitosamente", datos: actualizado });
     } catch (err) {
-        res.status(500).json({ estado: false, mensaje: "Error actualizando proveedor", error: err.message });
+        const statusCode = err.statusCode || 500;
+        res.status(statusCode).json({ 
+            estado: false, 
+            mensaje: err.message || "Error actualizando proveedor"
+        });
     }
 });
 
@@ -52,9 +83,13 @@ router.put("/:nit", async (req, res) => {
 router.delete("/:nit", async (req, res) => {
     try {
         const resultado = await deleteProveedor(req.params.nit);
-        res.json({ estado: true, mensaje: "Proveedor eliminado", datosEliminados: resultado.proveedor });
+        res.json({ estado: true, mensaje: "Proveedor eliminado exitosamente", datosEliminados: resultado.proveedor });
     } catch (err) {
-        res.status(500).json({ estado: false, mensaje: "Error eliminando proveedor", error: err.message });
+        const statusCode = err.statusCode || 500;
+        res.status(statusCode).json({ 
+            estado: false, 
+            mensaje: err.message || "Error eliminando proveedor"
+        });
     }
 });
 
